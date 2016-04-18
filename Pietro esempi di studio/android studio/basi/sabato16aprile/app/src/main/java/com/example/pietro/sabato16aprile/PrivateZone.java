@@ -15,9 +15,9 @@ public class PrivateZone extends Activity {
     {   //il super deve essere messo
         super.onCreate(savedInstanceState);
         setContentView(R.layout.privatezone);
-        //apro l intent
-        Intent i=getIntent();
-        String username=i.getStringExtra("username");
+        //apro l intent e prendo il valore passsato
+        Bundle i = getIntent().getExtras();
+        int value=i.getInt("username");
 
     }
 

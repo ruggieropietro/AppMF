@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
                 //inizializzo intent
                 Intent i=new Intent(MainActivity.this,PrivateZone.class);
                 //da dove a dove
-            i.putExtra("username","usernameout");
+            i.putExtra("username",10);
                 //llo avvio
             startActivity(i);
         }
