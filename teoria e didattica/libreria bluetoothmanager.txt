@@ -1,0 +1,121 @@
+LIBRERIE ANDROID STUDIO PER IL BLUETOOTH
+
+http://developer.android.com/guide/topics/connectivity/bluetooth.html
+
+Le api bluetooth permettono di scnerizzare altri bluetooth device,scoprire servizi e conettersi ad altri bluetooth,
+stabilire canali RFCOMM,interrogare gli accoppiamenti,trasferire e ricevere file,gestire connessioni multiple.
+si puo' anche vedere informazioni per il bluetooth low energy, inserita dall'API18 
+http://developer.android.com/guide/topics/connectivity/bluetooth-le.html
+Sulla pagina principale si vede la classe bluettoth principalmente con le funzionalità di base,per avere anche le altre
+http://developer.android.com/reference/android/bluetooth/package-summary.html
+
+vediamo quindi ora i metodi di base
+----------------------------------------
+BluetoothAdapter
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html
+
+rappresenta il bluetooth radio,è il tasks per inizializzare qualsiasi funzionalità,i suoi metodi 
+inizializzano connessioni,riportano informazioni HW e sulla connessione fanno tramutare 
+su alcuni stati del bluetooth
+--------------------
+BluetoothDevice
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothDevice.html
+
+serve per poter richiedere una connesione con un dispositivo o una quesry di info da
+quel dispositivo
+--------------------
+BluetoothSocket
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothSocket.html
+
+simile al TCP socket,sul server servirà creare un bluetoothserver socket,sul client invece un
+bluetoothsocket. RFCOMM o SPP è il tipo di connessione creata
+--------------------
+BluetoothProfile
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothProfile.html
+
+serve al client per ricevere informazione sul proxy
+--------------------
+BluetoothHeadset
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothHeadset.html
+
+gestisce la connessione per auricolari
+--------------------
+BluetoothA2dp
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothA2dp.html
+
+gestisce la trasmissione audio ad alta qualità tra dispositivi bluetooth
+--------------------
+BluetoothHealth
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothHealth.html
+
+serve per le configurazioni di dispositivi sanitari
+--------------------
+BluetoothHealthCallback
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothHealthCallback.html
+
+inplementazione per BluetoothHealth
+--------------------
+BluetoothHealthAppConfiguration
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothHealthAppConfiguration.html
+
+implementazione,sempre per i dispositivi bluetooth ,utile a comunicare informazioni
+anche a lunga distanza
+--------------------
+BluetoothProfile.ServiceListener
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothProfile.ServiceListener.html
+
+rimanda quando BluetoothProfile si connette o si sconnete dal dispositivo
+-------------------
+
+Se si vuole avere funzionalità in app bisogna definire il livello di permessi che l'app ha,
+ 
+<manifest ... >
+  <uses-permission android:name="android.permission.BLUETOOTH" />
+  ...
+</manifest>
+puo' essere BLUETOOTH,BLUETOOTH_ADMIN,BLUETOOTH_PRIVILEGED
+
+L'utilizzo del bluetooth va iniziato con un bluetooth adapter,
+
+BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+if (mBluetoothAdapter == null) {
+    // Device does not support Bluetooth
+}
+In questo modo si puo' controllare,attraverso il valore di ritorno,se il dispositivo ha bluetooth integrato nell'HW.
+
+ora possiamo abilitare il bluetooth
+
+if (!mBluetoothAdapter.isEnabled()) {
+    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+}
+
+per avere un risultato guardare startActivityForResult e onActivityResult 
+
+Ora si dovrà usare di nuovo BluetoothAdapter per cercare bluetooth o iniziarsi come inquiring ecc...,
+si puo' ottenere name, class, and MAC address del device .
+Siamo comunque nel paraid,cioè i dispositivi si sono incontrati ma non sono connessi,per avere la lista
+dei dispositivi in  paraid
+
+Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+// If there are paired devices
+if (pairedDevices.size() > 0) {
+    // Loop through paired devices
+    for (BluetoothDevice device : pairedDevices) {
+        // Add the name and address to an array adapter to show in a ListView
+        mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+    }
+}
+
+
+CONTINUA A Discovering devices
