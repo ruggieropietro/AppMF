@@ -1,0 +1,493 @@
+LIBRERIE ANDROID STUDIO PER IL BLUETOOTH ,QUESTO TESTO E' UN
+RIASSUNTO POCO PRATICO CHE SPIEGA COME ARRIVARE A E INIZIARE
+UNA CONNESSIONE TRA BLUETOOTH
+
+http://developer.android.com/guide/topics/connectivity/bluetooth.html
+
+Le api bluetooth permettono di scnerizzare altri bluetooth device,scoprire servizi e conettersi ad altri bluetooth,
+stabilire canali RFCOMM,interrogare gli accoppiamenti,trasferire e ricevere file,gestire connessioni multiple.
+si puo' anche vedere informazioni per il bluetooth low energy, inserita dall'API18 
+http://developer.android.com/guide/topics/connectivity/bluetooth-le.html
+Sulla pagina principale si vede la classe bluettoth principalmente con le funzionalità di base,per avere anche le altre
+http://developer.android.com/reference/android/bluetooth/package-summary.html
+
+vediamo quindi ora i metodi di base
+----------------------------------------
+BluetoothAdapter
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html
+
+rappresenta il bluetooth radio,è il tasks per inizializzare qualsiasi funzionalità,i suoi metodi 
+inizializzano connessioni,riportano informazioni HW e sulla connessione fanno tramutare 
+su alcuni stati del bluetooth
+--------------------
+BluetoothDevice
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothDevice.html
+
+serve per poter richiedere una connesione con un dispositivo o una quesry di info da
+quel dispositivo
+--------------------
+BluetoothSocket
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothSocket.html
+
+simile al TCP socket,sul server servirà creare un bluetoothserver socket,sul client invece un
+bluetoothsocket. RFCOMM o SPP è il tipo di connessione creata
+--------------------
+BluetoothProfile
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothProfile.html
+
+serve al client per ricevere informazione sul proxy
+--------------------
+BluetoothHeadset
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothHeadset.html
+
+gestisce la connessione per auricolari
+--------------------
+BluetoothA2dp
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothA2dp.html
+
+gestisce la trasmissione audio ad alta qualità tra dispositivi bluetooth
+--------------------
+BluetoothHealth
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothHealth.html
+
+serve per le configurazioni di dispositivi sanitari
+--------------------
+BluetoothHealthCallback
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothHealthCallback.html
+
+inplementazione per BluetoothHealth
+--------------------
+BluetoothHealthAppConfiguration
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothHealthAppConfiguration.html
+
+implementazione,sempre per i dispositivi bluetooth ,utile a comunicare informazioni
+anche a lunga distanza
+--------------------
+BluetoothProfile.ServiceListener
+--------------------
+http://developer.android.com/reference/android/bluetooth/BluetoothProfile.ServiceListener.html
+
+rimanda quando BluetoothProfile si connette o si sconnete dal dispositivo
+-------------------
+
+Se si vuole avere funzionalità in app bisogna definire il livello di permessi che l'app ha,
+ 
+<manifest ... >
+  <uses-permission android:name="android.permission.BLUETOOTH" />
+  ...
+</manifest>
+puo' essere BLUETOOTH,BLUETOOTH_ADMIN,BLUETOOTH_PRIVILEGED
+
+L'utilizzo del bluetooth va iniziato con un bluetooth adapter,
+
+BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+if (mBluetoothAdapter == null) {
+    // Device does not support Bluetooth
+}
+In questo modo si puo' controllare,attraverso il valore di ritorno,se il dispositivo ha bluetooth integrato nell'HW.
+
+ora possiamo abilitare il bluetooth
+
+if (!mBluetoothAdapter.isEnabled()) {
+    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+}
+
+per avere un risultato guardare startActivityForResult e onActivityResult 
+
+Ora si dovrà usare di nuovo BluetoothAdapter per cercare bluetooth o iniziarsi come inquiring ecc...,
+si puo' ottenere name, class, and MAC address del device .
+Siamo comunque nel paraid,cioè i dispositivi si sono incontrati ma non sono connessi,per avere la lista
+dei dispositivi in  ascolto
+ad esempio questo codice  restituisce se c'è un dispositivo noto gia' associato per poi prendere l indirizzo mac
+
+Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+// If there are paired devices
+if (pairedDevices.size() > 0) {
+    // Loop through paired devices
+    for (BluetoothDevice device : pairedDevices) {
+        // Add the name and address to an array adapter to show in a ListView
+        mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+    }
+}
+
+
+strat discovery per trovare dispositivi,bisogna ricordarsi che una volta trovati i dispositivi si deve
+salvare un broadcast receiver per tenere i dati del dispositivo
+
+esempio
+
+     se  ( BluetoothDevice . ACTION_FOUND . Equals ( azione ))  { 
+            // Ottenere l'oggetto BluetoothDevice dal Intent 
+            BluetoothDevice dispositivo = intento . GetParcelableExtra ( BluetoothDevice . EXTRA_DEVICE ); 
+            // Aggiungere il nome e l'indirizzo di un adattatore array mostrano in una lista 
+            mArrayAdapter . aggiungere ( dispositivo . getName ()  +  "\ n"  + dispositivo . getAddress ()); 
+        } 
+    } 
+
+per sfruttare al meglio questa risorsa si deve ovviamente estrarre l'indirizzo mac e poi fare i dovuti
+canceldiscovery,questo perchè altrimenti il dispositivo continua a cercare altri dispositivi e tra le 
+altre cose se abbiamo chiesto la connessione con un dispositivo rischiamo di togliere banda al passaggio
+di dati.
+
+ricordarsi che per avviare la visibilità quando un dispositivo fa da socket server si deve  usare un codice tipo
+
+ntroduzione
+Componenti App
+Risorse App
+App manifesto
+Interfaccia utente
+Animazione e Grafica
+Calcolo
+Media e fotocamera
+Luogo e Sensori
+Connettività
+Bluetooth
+Low Energy Bluetooth
+NFC
+Wi-Fi P2P
+USB
+SORSO
+Il testo e input
+Archivio dati
+Amministrazione
+Web Apps
+Migliori pratiche
+Bluetooth
+In questo documento
+Le basi
+Permessi Bluetooth
+Impostazione Bluetooth
+Dispositivi Trovare
+Interrogazione dispositivi associati
+Alla scoperta di dispositivi
+Collegamento dei dispositivi
+Collegamento come server
+Collegamento come client
+La gestione di una connessione
+Lavorare con i profili
+Vendor-specifica comandi AT
+Profilo dispositivo di salute
+classi principali
+BluetoothAdapter
+BluetoothDevice
+BluetoothSocket
+BluetoothServerSocket
+campioni correlati
+Bluetooth Chat
+Bluetooth HDP (Health Device Profile)
+La piattaforma Android include il supporto per lo stack di rete Bluetooth, che permette ad un dispositivo per lo scambio di dati in modalità wireless con altri dispositivi Bluetooth. Il framework applicazione consente di accedere alle funzionalità Bluetooth tramite le API Bluetooth Android. Queste API consentono applicazioni in modalità wireless la connessione ad altri dispositivi Bluetooth, consentendo point-to-point e multipunto funzioni wireless.
+
+Utilizzando le API Bluetooth, un'applicazione Android in grado di eseguire le seguenti operazioni:
+
+Cercare altri dispositivi Bluetooth
+Interrogare l'adattatore Bluetooth locale per i dispositivi Bluetooth accoppiati
+Stabilire canali RFCOMM
+Connettersi ad altri dispositivi attraverso la scoperta di servizio
+Il trasferimento dei dati da e verso altri dispositivi
+Gestire connessioni multiple
+Questo documento descrive come utilizzare Classic Bluetooth . Classic Bluetooth è la scelta giusta per più operazioni ad alta intensità di batteria come lo streaming e la comunicazione tra i dispositivi Android. Per i dispositivi Bluetooth con bassi requisiti di potenza, Android 4.3 (livello di API 18) introduce il supporto API per Bluetooth Low Energy. Per ulteriori informazioni, vedere Bluetooth Low Energy .
+
+Le basi
+Questo documento descrive come utilizzare le API Bluetooth Android per realizzare quattro principali compiti necessari per comunicare tramite Bluetooth: la creazione di Bluetooth, trovando i dispositivi che sono o associato o disponibili in ambito locale, dispositivi di collegamento, e il trasferimento di dati tra dispositivi.
+
+Tutte le API Bluetooth sono disponibili nella android.bluetooth pacchetto. Ecco un riepilogo delle classi e interfacce che sarà necessario creare connessioni Bluetooth:
+
+BluetoothAdapter
+Rappresenta l'adattatore Bluetooth locale (radio Bluetooth). Il BluetoothAdapter è il punto di ingresso per tutte le interazioni Bluetooth. Con questo, è possibile scoprire altri dispositivi Bluetooth, interrogare un elenco dei dispositivi legati (accoppiati), un'istanza di un BluetoothDevice utilizzando un noto indirizzo MAC, e creare un BluetoothServerSocket per ascoltare le comunicazioni da altri dispositivi.
+BluetoothDevice
+Rappresenta un dispositivo Bluetooth remoto. Usare questo per richiedere una connessione con un dispositivo remoto attraverso un BluetoothSocket o una query informazioni sul dispositivo, come il nome, l'indirizzo, la classe, e lo stato di legame.
+BluetoothSocket
+Rappresenta l'interfaccia per una presa Bluetooth (simile ad un TCP Socket ). Questo è il punto di connessione che consente a un'applicazione per lo scambio di dati con un altro dispositivo Bluetooth tramite InputStream e OutputStream.
+BluetoothServerSocket
+Rappresenta un server socket aperto che ascolta le richieste in entrata (simile a una rete TCP ServerSocket ). Al fine di collegare due dispositivi Android, un dispositivo deve aprire un socket server con questa classe. Quando un dispositivo Bluetooth remoto effettua una richiesta di connessione al dispositivo, il BluetoothServerSocket restituirà un collegato BluetoothSocket quando la connessione viene accettata.
+BluetoothClass
+Descrive le caratteristiche e le capacità di un dispositivo Bluetooth generali. Questa è una sola lettura insieme di proprietà che definiscono le classi di unità maggiore e minore del dispositivo e dei suoi servizi. Tuttavia, questo non è descritto in modo affidabile tutti i profili e servizi Bluetooth supportati dal dispositivo, ma è utile come un suggerimento per il tipo di dispositivo.
+BluetoothProfile
+Un'interfaccia che rappresenta un profilo Bluetooth. Un profilo Bluetooth è una specifica interfaccia wireless per la comunicazione basati su Bluetooth tra dispositivi. Un esempio è il profilo Hands-Free. Per una discussione più di profili, vedere Lavorare con i profili
+Cuffia Bluetooth
+Fornisce il supporto per auricolari Bluetooth da utilizzare con i telefoni cellulari. Questo include sia auricolare Bluetooth e Hands-free profili (v1.5).
+BluetoothA2dp
+Definisce come di alta qualità audio può essere trasmesso da un dispositivo all'altro tramite una connessione Bluetooth. "A2DP" sta per Advanced Audio Distribution Profile.
+BluetoothHealth
+Rappresenta un proxy profilo dispositivo di salute che controlla il servizio Bluetooth.
+BluetoothHealthCallback
+Una classe astratta che si utilizza per implementare BluetoothHealth callback. È necessario estendere questa classe e implementare i metodi di callback per ricevere aggiornamenti sui cambiamenti di stato di registrazione e il canale Bluetooth stato dell'applicazione.
+BluetoothHealthAppConfiguration
+Rappresenta una configurazione dell'applicazione che l'applicazione di terze parti Salute Bluetooth registra per comunicare con un dispositivo Bluetooth di salute a distanza.
+BluetoothProfile.ServiceListener
+Un'interfaccia che notifica BluetoothProfile clienti IPC quando sono stati collegato o scollegato dal servizio (vale a dire, il servizio interno che esegue un particolare profilo).
+Permessi Bluetooth
+Per poter utilizzare le funzioni Bluetooth nell'applicazione, è necessario dichiarare il permesso Bluetooth BLUETOOTH . Hai bisogno di questo permesso di eseguire qualsiasi comunicazione Bluetooth, come ad esempio la richiesta di una connessione, accettando una connessione e il trasferimento dei dati.
+
+Se si desidera che la vostra applicazione per avviare il rilevamento dei dispositivi o manipolare le impostazioni Bluetooth, è necessario anche dichiarare il BLUETOOTH_ADMIN permesso. La maggior parte delle applicazioni hanno bisogno questa autorizzazione solo per la capacità di rilevare i dispositivi Bluetooth locali. Le altre abilità concesse da questa autorizzazione non devono essere usati, a meno che l'applicazione è un "power manager" che modificherà le impostazioni Bluetooth su richiesta dell'utente. Nota: Se si utilizza BLUETOOTH_ADMIN permesso, allora è necessario anche avere il BLUETOOTH permesso.
+
+Dichiarare il permesso Bluetooth (s) nel file manifesto dell'applicazione. Per esempio:
+
+ 
+<manifesto ... > 
+  <usa-permesso  Android: nome = "android.permission.BLUETOOTH"  /> 
+  ... 
+</ manifest>
+Vedere la <usi-permesso> di riferimento per ulteriori informazioni sulla dichiarazione autorizzazioni per le applicazioni.
+
+Impostazione Bluetooth
+Figura 1: La finestra di dialogo Bluetooth abilitazione.
+Prima che l'applicazione in grado di comunicare tramite Bluetooth, è necessario verificare che il Bluetooth è supportato sul dispositivo, e in caso affermativo, assicurarsi che sia abilitata.
+
+Se il Bluetooth non è supportato, quindi è necessario disattivare grazia qualsiasi funzionalità Bluetooth. Se il Bluetooth è supportato, ma disabilitato, allora si può richiedere che l'utente abilita Bluetooth senza lasciare l'applicazione. Questa configurazione viene eseguita in due fasi, utilizzando il BluetoothAdapter .
+
+Prendi il BluetoothAdapter
+Il BluetoothAdapter è richiesto per ogni e qualsiasi attività Bluetooth. Per ottenere il BluetoothAdapter , chiamare la statica getDefaultAdapter () metodo. Ciò restituisce un BluetoothAdapter che rappresenta proprio adattatore Bluetooth del dispositivo (la radio Bluetooth). C'è un adattatore Bluetooth per l'intero sistema, e l'applicazione può interagire con esso tramite questo oggetto. Se getDefaultAdapter () restituisce null, allora il dispositivo non supporta Bluetooth e la tua storia finisce qui. Per esempio:
+ 
+BluetoothAdapter mBluetoothAdapter =  BluetoothAdapter . getDefaultAdapter (); 
+if  ( mBluetoothAdapter ==  null )  { 
+    // Dispositivo non supporta Bluetooth 
+}
+Attiva Bluetooth
+Successivamente, è necessario assicurarsi che il Bluetooth sia abilitata. Chiamare isEnabled () per verificare se il Bluetooth è attualmente abilitato. Se questo metodo restituisce false, quindi Bluetooth è disabilitato. Per richiedere che essere abilitato Bluetooth, chiamare startActivityForResult () con il ACTION_REQUEST_ENABLE Intent azione. Questo emetterà una richiesta per consentire Bluetooth attraverso le impostazioni di sistema (senza arrestare l'applicazione). Per esempio:
+ 
+if  (! mBluetoothAdapter . isEnabled ())  { 
+    Intent enableBtIntent =  new  Intent ( BluetoothAdapter . ACTION_REQUEST_ENABLE ); 
+    startActivityForResult ( enableBtIntent , REQUEST_ENABLE_BT ); 
+}
+Viene visualizzata una finestra che richiede l'autorizzazione all'utente di attivare Bluetooth, come mostrato in Figura 1. Se l'utente risponde "Sì", il sistema inizierà a consentire Bluetooth e attenzione tornerà alla propria applicazione una volta che il processo viene completato (o non).
+Il REQUEST_ENABLE_BT costante passato a startActivityForResult () è un numero intero definito localmente (che deve essere maggiore di 0), che il sistema passa di nuovo a voi nella vostra onActivityResult () implementazione come requestCode parametro.
+Se riesce consentendo Bluetooth, la vostra attività riceve il RESULT_OK codice risultato nella onActivityResult () di callback. Se il Bluetooth non è stato abilitato a causa di un errore (o l'utente ha risposto "No"), allora il codice risultato è RESULT_CANCELED .
+Opzionalmente, l'applicazione può anche ascoltare l' ACTION_STATE_CHANGED trasmissione intenti, quali il sistema trasmetterà ogni volta che lo stato Bluetooth è cambiato. Questa trasmissione contiene i campi aggiuntivi EXTRA_STATE e EXTRA_PREVIOUS_STATE , contenenti i nuovi e vecchi Stati Bluetooth, rispettivamente. I valori possibili per questi campi extra sono STATE_TURNING_ON , STATE_ON , STATE_TURNING_OFF , e STATE_OFF . L'ascolto di questa trasmissione può essere utile per individuare le modifiche apportate allo stato Bluetooth, mentre la vostra applicazione è in esecuzione.
+
+Suggerimento: L'attivazione di reperibilità consentirà automaticamente Bluetooth. Se si prevede di attivare in modo coerente dispositivo rilevabilità prima di eseguire l'attività Bluetooth, è possibile saltare al punto 2. Leggi consentendo la reperibilità , di seguito.
+
+Dispositivi Trovare
+Utilizzando il BluetoothAdapter , è possibile trovare i dispositivi Bluetooth remoto sia attraverso il rilevamento dei dispositivi o interrogando il elenco dei dispositivi associati (legati).
+
+rilevamento dei dispositivi è una procedura di scansione che ricerca l'area locale per dispositivi abilitati Bluetooth e quindi richiedere alcune informazioni su ciascuno di essi (questo è a volte indicato come "scoprire", "indagatore" o "scansione"). Tuttavia, un dispositivo Bluetooth all'interno del locale sarà rispondere a una richiesta di individuazione solo se è attualmente abilitato per essere rilevabile. Se un dispositivo è rilevabile, che risponderà alla richiesta di individuazione attraverso la condivisione di alcune informazioni, come ad esempio il nome del dispositivo, di classe, e il suo indirizzo MAC univoco. Utilizzando queste informazioni, l'esecuzione di rilevamento dei dispositivi può quindi scegliere di avviare una connessione al dispositivo rilevato.
+
+Una volta che viene stabilita una connessione con un dispositivo remoto per la prima volta, una richiesta di associazione viene presentata automaticamente all'utente. Quando un dispositivo è accoppiato, le informazioni di base su quel dispositivo (come ad esempio il nome del dispositivo, la classe e l'indirizzo MAC) viene salvato e può essere letto utilizzando le API Bluetooth. Utilizzando il noto indirizzo MAC di un dispositivo remoto, una connessione può essere avviata con esso in qualsiasi momento, senza effettuare la scoperta (supponendo che il dispositivo si trova nel raggio d'azione).
+
+Ricordate che c'è una differenza tra l'essere associato e essere connessi. Da abbinare significa che due dispositivi sono a conoscenza dell'esistenza di un l'altro, hanno un link-chiave condivisa che può essere utilizzata per l'autenticazione, e sono in grado di stabilire una connessione crittografata con l'altro. Per essere collegato significa che i dispositivi attualmente condividono un canale RFCOMM e sono in grado di trasmettere dati tra loro. Gli attuali Android Bluetooth API richiedono dispositivi per essere accoppiati prima di una connessione RFCOMM può essere stabilita. (Abbinamento viene eseguito automaticamente quando si avvia una connessione crittografata con le API Bluetooth.)
+
+Le seguenti sezioni descrivono come trovare i dispositivi che sono stati accoppiati, o scoprire nuovi dispositivi con rilevamento dei dispositivi.
+
+Nota: i dispositivi Android-powered non sono rilevabili per impostazione predefinita. Un utente può rendere il dispositivo rilevabile per un tempo limitato attraverso le impostazioni di sistema, o di un'applicazione può richiedere che l'utente abilita la reperibilità senza lasciare l'applicazione. Come attivare la reperibilità è discusso qui di seguito.
+
+Interrogazione dispositivi associati
+
+Prima di eseguire il rilevamento dei dispositivi, il suo valore interrogazione l'insieme dei dispositivi associati per vedere se il dispositivo desiderato è già noto. Per fare ciò, chiamare getBondedDevices () . Ciò restituirà un insieme di BluetoothDevice dispositivi associati che rappresentano s. Ad esempio, è possibile interrogare tutti i dispositivi associati e poi mostrare il nome di ogni dispositivo per l'utente, utilizzando un ArrayAdapter:
+
+ 
+Impostare < BluetoothDevice > pairedDevices = mBluetoothAdapter . GetBondedDevices (); 
+// Se ci sono dei dispositivi associati 
+, se  ( pairedDevices . Dimensioni ()  >  0 )  { 
+    // Loop attraverso dispositivi associati 
+    per  ( BluetoothDevice dispositivo : pairedDevices )  { 
+        // Aggiungere il nome e rivolgersi ad un adattatore serie di mostrare in una lista 
+        mArrayAdapter . aggiungere ( dispositivo . getName ()  +  "\ n"  + dispositivo . getAddress ()); 
+    } 
+}
+Tutto ciò che è necessario dal BluetoothDevice oggetto, al fine di avviare una connessione è l'indirizzo MAC. In questo esempio, viene salvato come parte di un ArrayAdapter che è mostrato all'utente. L'indirizzo MAC può poi essere estratto in modo da avviare la connessione. Si può imparare di più sulla creazione di una connessione nella sezione riguardante i dispositivi di collegamento .
+
+Alla scoperta di dispositivi
+
+Per iniziare a scoprire i dispositivi, semplicemente chiamare startDiscovery () . Il processo è asincrona e il metodo immediatamente tornare con un valore booleano che indica se la scoperta è stato avviato con successo. Il processo di rilevamento di solito comporta una scansione richiesta di circa 12 secondi, seguita da una pagina di scansione di ogni dispositivo trovato per recuperare il suo nome Bluetooth.
+
+L'applicazione deve registrare un BroadcastReceiver per la ACTION_FOUND intenti al fine di ricevere informazioni su ogni dispositivo rilevato. Per ogni dispositivo, il sistema trasmetterà il ACTION_FOUND intenti. Questo intento trasporta i campi aggiuntivi EXTRA_DEVICE e EXTRA_CLASS , contenenti un BluetoothDevice e un BluetoothClass , rispettivamente. Ad esempio, ecco come è possibile registrarsi per gestire la trasmissione quando i dispositivi vengono rilevati:
+
+ 
+// Crea un BroadcastReceiver per 
+     
+       
+        
+        Quando il rilevamento trova un dispositivo 
+        se  ( BluetoothDevice . ACTION_FOUND . Equals ( azione ))  { 
+            // Ottenere l'oggetto BluetoothDevice dal Intent 
+            BluetoothDevice dispositivo = intento . GetParcelableExtra ( BluetoothDevice . EXTRA_DEVICE ); 
+            // Aggiungere il nome e l'indirizzo di un adattatore array mostrano in una lista 
+            mArrayAdapter . aggiungere ( dispositivo . getName ()  +  "\ n"  + dispositivo . getAddress ()); 
+        } 
+    } 
+}; 
+// Registra la 
+  
+ Non dimenticate di annullare la registrazione durante OnDestroy
+Tutto ciò che è necessario dal BluetoothDevice oggetto, al fine di avviare una connessione è l'indirizzo MAC. In questo esempio, viene salvato come parte di un ArrayAdapter che è mostrato all'utente. L'indirizzo MAC può poi essere estratto in modo da avviare la connessione. Si può imparare di più sulla creazione di una connessione nella sezione riguardante i dispositivi di collegamento .
+
+Attenzione: Esecuzione di rilevamento dei dispositivi è una procedura pesante per l'adattatore Bluetooth e consumerà un sacco delle sue risorse. Dopo aver trovato un dispositivo per la connessione, essere certi che ci si ferma sempre scoperta con cancelDiscovery () prima di tentare una connessione. Inoltre, se già in possesso di un collegamento con un dispositivo, quindi eseguire scoperta può ridurre significativamente la larghezza di banda disponibile per la connessione, quindi non si deve eseguire il rilevamento durante la connessione.
+
+L'attivazione di reperibilità
+
+Se volete rendere il dispositivo locale per gli altri dispositivi, chiamare startActivityForResult (Intent, int) con il ACTION_REQUEST_DISCOVERABLE Intent azione. Questo emetterà una richiesta per attivare la modalità rilevabile attraverso le impostazioni di sistema (senza arrestare l'applicazione). Per impostazione predefinita, il dispositivo sarà rilevabile per 120 secondi. È possibile definire una diversa durata aggiungendo il EXTRA_DISCOVERABLE_DURATION Intent supplementare. La durata massima di un'applicazione può impostare è 3600 secondi, e un valore pari a 0 significa che il dispositivo è sempre rilevabile. Qualsiasi valore inferiore a 0 o superiore a 3600 viene automaticamente impostato a 120 secondi). Ad esempio, questo frammento imposta la durata di 300:
+
+Intent discoverableIntent =  new 
+Intent ( BluetoothAdapter . ACTION_REQUEST_DISCOVERABLE ); 
+discoverableIntent . putExtra ( BluetoothAdapter . EXTRA_DISCOVERABLE_DURATION ,  300 ); 
+startActivity ( discoverableIntent );
+
+dove 300 sta per i secondi in cui il dispositivo e visibile come socket server
+
+a quaesto punto,una volta che si ha tutti i dispositivi associati,si deve collegare i dispositivi,
+ma per fare questo si deve comunque decidere quale sarà il master e quale sarà lo slave
+
+Ottenere un BluetoothServerSocket chiamando il listenUsingRfcommWithServiceRecord (String, UUID) .
+
+Iniziare ad ascoltare le richieste di connessione chiamando accetta () .
+
+A meno che non si desidera accettare ulteriori connessioni, chiamate close () .
+
+esempio 
+
+   Utilizzare un oggetto temporaneo che viene poi assegnato a mmServerSocket, 
+        // perché mmServerSocket è definitiva 
+        BluetoothServerSocket tmp =  nulla ; 
+        provare  { 
+            // MY_UUID è stringa UUID del app, utilizzato anche da parte del cliente 
+
+            
+
+    
+ 
+      
+         
+        Mantenere l'ascolto finché non si verifica un'eccezione o una presa di corrente viene restituito 
+        , mentre  ( vero )  { 
+            prova  { 
+                presa = mmServerSocket . Accettare (); 
+            }  fermo  ( IOException e )  { 
+                pausa ; 
+            } 
+            // Se una connessione è stata accettata 
+            se  ( presa ! =  Null )  { 
+                // fare il lavoro per gestire la connessione (in un thread separato) 
+                manageConnectedSocket ( presa ); 
+                mmServerSocket . stretta (); 
+                rottura ; 
+            } 
+        } 
+    } 
+ 
+    / ** annullerà il socket di ascolto, e causare il filo per terminare * / 
+    pubblico  vuoto annullare ()  { 
+        prova  { 
+            mmServerSocket . stretta (); 
+        }  fermo  ( IOException e )  {  } 
+    } 
+}
+
+
+mentre il client dovrebbe
+
+
+Utilizzando il BluetoothDevice , ottenere un BluetoothSocket chiamando createRfcommSocketToServiceRecord (UUID) .
+
+Avviare la connessione chiamando connect () .
+
+esempio
+
+Utilizzare un oggetto temporaneo che viene poi assegnato a mmSocket, 
+        // perché mmSocket è definitiva 
+        BluetoothSocket tmp =  nullo ; 
+        mmDevice = dispositivo ; 
+ 
+        // Ottenere un BluetoothSocket per collegarsi con il dato BluetoothDevice 
+        provare  { 
+            // MY_UUID è stringa UUID del app, utilizzato anche dal server 
+
+            
+
+    
+ 
+      
+        Annulla scoperta perché rallenta la connessione 
+        mBluetoothAdapter . CancelDiscovery (); 
+ 
+        provare  { 
+            // Collegare il dispositivo attraverso la presa. Questo bloccherà 
+            // fino a quando non riesce o genera un'eccezione 
+            mmSocket . Collegare (); 
+        }  fermo  ( IOException ConnectException )  { 
+            // Impossibile connettersi; chiudere il socket e uscire 
+            try  { 
+                mmSocket . stretta (); 
+            }  fermo  ( IOException closeException )  {  } 
+            ritorno ; 
+        } 
+ 
+        // fare il lavoro per gestire la connessione (in un thread separato) 
+        manageConnectedSocket ( mmSocket ); 
+    } 
+ 
+    / ** annullerà una connessione in corso, e chiudere la presa * / 
+    pubblico  vuoto annullare ()  { 
+        prova  { 
+            mmSocket . stretta (); 
+        }  fermo  ( IOException e )  {  } 
+    } 
+}
+
+una volta creata la connesione basta 
+
+Prendi il InputStream e OutputStream che gestiscono le trasmissioni attraverso la presa, via getInputStream () e getOutputStream () , rispettivamente.
+Leggere e scrivere dati ai flussi con read (byte []) e write (byte []) .
+
+esempio
+
+ I flussi di ingresso e di uscita, utilizzando gli oggetti temporanei perché 
+        // flussi membri sono 
+         
+
+
+            
+ 
+
+
+    
+ 
+      
+            negozio di buffer per il flusso 
+        int byte ;  // byte restituiti da read () 
+ 
+        // continuare ad ascoltare la InputStream fino un'eccezione si verifica 
+        durante la  ( vera )  { 
+            prova  { 
+                // Continua a leggere dalla InputStream 
+                byte = mmInStream . lettura ( tampone ); 
+                / / Invia i byte ottenuti per l'interfaccia utente 
+ 
+                        
+               
+                
+            
+        
+    
+ 
+    Chiamare questo dalla principale attività per inviare i dati al dispositivo remoto * / 
+    pubblico  vuoto write ( byte [] bytes )  { 
+        prova  { 
+            mmOutStream . Scrittura ( byte ); 
+        }  fermo  ( IOException e )  {  } 
+    } 
+ 
+    / * Chiamare questo dalla principale l'attività di spegnere la connessione * / 
+    pubblico  vuoto annullare ()  { 
+        prova  { 
+            mmSocket . stretta (); 
+        }  fermo  ( IOException e )  {  } 
+    } 
+}
+
+
+varie
+
+A partire dal Android 3.0, l'API Bluetooth include il supporto per lavorare con i profili Bluetooth. Un profilo Bluetooth è una specifica interfaccia wireless per la comunicazione basati su Bluetooth tra dispositivi.
+cioè per particolari tipi di dispositvo(auricolare ecc..)
+
+dall'api 14 implementazione per dispositivi sanitari

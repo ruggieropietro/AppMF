@@ -1,0 +1,51 @@
+In questo documento si spiega molto largamente cosa è un bluetooth ,dando una mezza infarinatura sulle sue funzionalitùà e la sua storia,senza approfondire il tutto ne vedere la parte HW e le specifiche dei ptotocolli.
+
+Che cosa è il bluetooth?
+Il bluetooth nasce come idea universale per il passaggio di dati e la connessione,a corto raggio, tra dispositivi di varie case,utilizzabile sia per embedded e no,per questo si sono riunite la stragrande maggioranza delle case,oggi comprendono 2000 ,con il bluettoth è anche possibile accedere al wi fi.
+Il tipo di connessione creata è chiamato piconet,che ha 1 master e un massimo di 7 slave,poi 200 park  ,cioè  dispositivi che non possono scambiare dati ma essere sincronizzati.
+Il comodo di questo sistema è l'inquiry,cioè la specifica bluettoth da già in automatico la possibilità di creare piconet senza l'intervento umano,tutte le volte che un dispositivo bluettoth
+entra od esce dall'area di ricezione del master.
+Il protoccolo SDP si occupa di comunicare tutti i servizi di cui un dispositivo è fornito,per esempio per poter capire se siamo di fronte a una stampante bluetooth o un mouse.
+Un fattore inportante del bluettoth è che un dispositivo puo' essere parte di un piconet come master e anche di un altro piconet come slave,creando uno scatternet
+lo standard Bluetooth agisce sui 2.4GHz,(ISM industrial,scientific and Medical) essendo una banda libera è anche una banda molto usata,e si ha bisogno di un metodo solido 
+per la gestione di rumori ed errori,cioè 2-FSK.
+Stack bluettoth,protocollo che permette l'intercomunicazione di dispositivi diversi tra loro,e anche di case diverse.
+I bluettoth in fabbricazione hanno un attributo,cioe la specifica di potenza,puo' avere solo 3 scelte,classe 1 2 3,rispettivamente 100mW 20 dbm,2.5mW 4 dbm, 1 mW o dBm,
+hanno un campo corrispettivamente di 110,10,1 m,la potenza del segnale è
+monitorato dell'RSSI(receiver signal strength indication),nel caso di segnale troppo debole 
+manda un LMP ,al contrario se è troppo forte viene inviato un LMP_decr_poe_req.
+Il bluetooth deve oeprare con un bit error massimo 0.1%,l'architettura di un bluetooth 
+puo' essere ogni volta diversa.
+Nelle specifiche bluetooth spesso si fa confusione tra link controller e baseband,,il primo è 
+il responsabile del trasporto dei pacchetti sul link,il secondo si occupa della temporizzazione, hw,errori e mantenimento connessione.
+CLKN è il clock interno di ogni bluetooth,ma quando i bluettoth entrano in un piconet acquisiscono il clock del master.
+Il Baseband puo' avere due tipi di connessioni,ACL e SCO.
+Dal bluetooth si possono estrarre 4 tipi di indirizzi,BD_ADDR cioè 48 univoco per ogni dispositiv0o,AM_ADDR univoco per ogni dispositivo ma relativo alla rete piconet,PM_ADDR 
+definisce univocamente un dispositivo relativamente alla modalità park
+AR_ADDR nuovamente per il park,ma non univoco utile alla ricezione messaggi d'accesso.  
+ARQ si occupa della ritrasmissione di pacchetti corrotti.
+un apparecchio bluetooth puo' essere in vari istanti in vari stati:
+Standby ,inattivo spento la radio e nessun trasferimento
+Inquiry:
+tentativo di diventare il master della piconet
+inquiry scan:
+analogo per diventare slave
+inquiry response:
+risposta dello slave con FHS
+Slave Response
+slave dopo FHS
+Page:
+acquisizione del master al FHS
+Master response:
+master dopo Page
+Page scan:
+ciclo per passaggio e aquisizione FHS
+Connection Active:
+lo slave acquisisce il CK del master
+Connection Hold:
+cessassione momentanea del traffico per garantire altre funzionalità
+Connection sniff:
+definito slot temporale in cui lo slave ascolta il traffico
+Connection Park:
+lo slave cede AM_ADDR e ascolta il traffico solo occasionalmente
+
