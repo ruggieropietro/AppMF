@@ -1,0 +1,94 @@
+in questo file si descriverà la libreria e le possibilità che offre
+android studio riguardo il bluetooth low energy,i riferimenti sono
+http://developer.android.com/guide/topics/connectivity/bluetooth-le.html
+
+Il bluetooth low energy è introdotto dall'API 18 ,appunto nasce per implementare il
+bluetooth a basso consumo,la tecnologia bluetooth è un modo di sfruttare meglio la tecnologia 
+già esistente ma sfruttando al meglio il trasferimento dati,cioè gestendo i tempi e la potenza nel modo
+piu' economico.
+
+ci sono dei termini fondamentli da riconoscere
+
+GATT 
+
+Generic attribute profile,sono attributi inportanti per il collegamentio BLE
+
+SIG
+
+solitamente dipendente dal GATT dichiara il o i tipo di profilo appartenente al dispositivo
+i profili  specifica un modo di funzionamento per una certa applicazione,la lista dei profili è
+visibile a 
+https://www.bluetooth.com/specifications/adopted-specifications
+
+
+ATT o ATT-GATT da attributi il piu' sintetici possibile che descrivono caratteristiche e servizi
+
+CARATTERISTICHE sono "flaggate" da 1 a n
+
+DESCRITTORE  serve di supporto a una caratteristica,come unita' di misure e altri parametri di riferimento
+
+SERVIZIO insieme delle caratteristiche che creano appunto il servizio,come ad esempio "frequenza cardiaca"
+
+Nel BLE non è corretto parlare solo di server e client,siccome appunto il trasferimento di GATT porta a 
+scambiarsi i ruoli, è piu' corretto quindi parlare di centrale e periferico,durante e prima la connessione ,
+e di SERVER GATT e CLIENT GATT dopo la connessione.
+
+L'implementazione software è referibile
+http://developer.android.com/reference/android/bluetooth/BluetoothGattServer.html
+
+Percio,quando si vuole usare il bluetooth low energy si deve dichiarare nel manifest ,come con il classic,ma si
+puo' decidere di inpoostare la connessione solo ad altri BLE
+percio' è necessario inserire nel manifest anche
+
+<usa-feature  Android: nome = "android.hardware.bluetooth_le"  android: necessaria = "true" />
+
+o al contrario mettere false se si vuole precludere le connessioni solo con bluetooth classic
+
+E' possibile ulteriormente decidere di disattivare il BLe attraverso
+PackageManager.hasSystemFeature():
+
+ad esempio
+
+// Use this check to determine whether BLE is supported on the device. Then
+// you can selectively disable BLE-related features.
+if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+    Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
+    finish();
+}
+
+per gestire i vari casi,per cui il dispositivo non ha BLe ma solo classic o se il BLE è disattivto ecc...
+si deve usare  il bluetoothadapter
+
+http://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html
+
+poi si usa startlescan per cercare i dispositivi si usa startlescan
+http://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html#startLeScan(android.bluetooth.BluetoothAdapter.LeScanCallback)
+
+mandandogli come argomento un 
+http://developer.android.com/reference/android/bluetooth/BluetoothAdapter.LeScanCallback.html
+
+è consigliato non usare un loop per fare la scansione ma bensi dare un tot di tempo limitato per la ricerca,
+siccome,semplicemente,potrebbe essere uscito dal range il dispositivo o altri casi,la ricerca continua porta a uno 
+spreco di batteria inutile.
+
+E' ulteriormente possibile limitare la scansione  a determinati tipi di periferiche,con
+startLeScan (UUID [], BluetoothAdapter.LeScanCallback)
+http://developer.android.com/reference/android/bluetooth/BluetoothAdapter.LeScanCallback.
+html
+in qualsiasi caso non è è possibile fare queste ricerce specifiche sia per classic che per BLE
+contemporaneamente
+
+a questo punto per connettersi si richiama il connectGatt () inviandogli tre variabili,
+contesto oggetto, Autoconnect (booleano che indica se per connettersi automaticamente al
+ dispositivo BLE non appena sarà disponibile), e un riferimento a un BluetoothGattCallback
+http://developer.android.com/reference/android/bluetooth/BluetoothGattCallback.html
+
+broadcastUpdate () serve al richiamo di una funzione specifica della connessione
+
+alcuni eventi possono essere  gestiti da un clssico BroadcastReceiver 
+una volta che il dispositivo è connesso si possono rilevare e chidere informazioni 
+native riguardo al BLE e o rimanere aggiornaTI sui cambiamenti di caratteristiche
+setCharacteristicNotification () e onCharacteristicChanged ()
+
+è inportante ricordarsi di richiamare close () una volta finito per liberare risorsi di sistema
+
