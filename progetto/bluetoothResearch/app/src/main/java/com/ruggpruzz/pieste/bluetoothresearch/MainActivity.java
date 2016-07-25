@@ -19,13 +19,21 @@ package com.ruggpruzz.pieste.bluetoothresearch;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothProfile;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -33,19 +41,89 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.UUID;
+import java.io.IOException;
 
 
 public class MainActivity extends Activity {
 
-    private BluetoothAdapter mBluetoothAdapter ;
+    private BluetoothAdapter mBluetoothAdapter;
     private BluetoothAdapter btAdapter;
-    private Set<BluetoothDevice> dispositivi ;
-    private ListView lv  ;
-    private ArrayAdapter<String> adapter =null;
-    private static final int BLUETOOTH_ON=1000;
+    private Set<BluetoothDevice> dispositivi;
+    private ListView lv;
+    private ArrayAdapter<String> adapter = null;
+    private static final int BLUETOOTH_ON = 1000;
+    private BluetoothSocket mmSocket;
+    private BluetoothDevice mmDevice;
+    private UUID myUUID;
+    private BluetoothGatt mBluetoothGatt =null;
+    private static final int STATE_DISCONNECTED = 0;
+    private static final int STATE_CONNECTING = 1;
+    private static final int STATE_CONNECTED = 2;
 
+    public final static String ACTION_GATT_CONNECTED =
+            "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
+    public final static String ACTION_GATT_DISCONNECTED =
+            "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
+    public final static String ACTION_GATT_SERVICES_DISCOVERED =
+            "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
+    public final static String ACTION_DATA_AVAILABLE =
+            "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
+    public final static String EXTRA_DATA =
+            "com.example.bluetooth.le.EXTRA_DATA";
+    private int mConnectionState = STATE_DISCONNECTED;
+
+
+
+    private void broadcastUpdate(final String action) {
+        final Intent intent = new Intent(action);
+        sendBroadcast(intent);
+    }
+
+
+
+
+
+    // Various callback methods defined by the BLE API.
+    private final BluetoothGattCallback mGattCallback =
+            new BluetoothGattCallback() {
+                @Override
+                public void onConnectionStateChange(BluetoothGatt gatt, int status,
+                                                    int newState) {
+                    String intentAction;
+                    if (newState == BluetoothProfile.STATE_CONNECTED) {
+                        intentAction = ACTION_GATT_CONNECTED;
+                        mConnectionState = STATE_CONNECTED;
+                        broadcastUpdate(intentAction);
+                        Toast.makeText(MainActivity.this, "Connected to GATT server."+"Attempting to start service discovery:" +
+                                mBluetoothGatt.discoverServices() , Toast.LENGTH_LONG).show();
+
+
+                    } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                        intentAction = ACTION_GATT_DISCONNECTED;
+                        mConnectionState = STATE_DISCONNECTED;
+                        Toast.makeText(MainActivity.this,"Disconnected from GATT server.", Toast.LENGTH_LONG).show();
+                        broadcastUpdate(intentAction);
+                    }
+                }
+
+                @Override
+                // New services discovered
+                public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                    if (status == BluetoothGatt.GATT_SUCCESS) {
+                        broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+                    } else {
+                        Toast.makeText(MainActivity.this,"onServicesDiscovered received: " + status, Toast.LENGTH_LONG).show();
+                    }
+                }
+
+            };
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -53,14 +131,39 @@ public class MainActivity extends Activity {
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                // Add the name and address to an array adapter to show in a ListView               // String blue =device.getName();
-                //adapter.add(blue);
-                Toast.makeText(MainActivity.this, device.getName(), Toast.LENGTH_LONG).show();
-
+                // Add the name and address to an array adapter to show in a ListView
+                Toast.makeText(MainActivity.this, device.getName() + " " + device.hashCode(), Toast.LENGTH_LONG).show();
+                //if (device.hashCode() == -1001190065)
+                if (device.hashCode() == 676210690)
+                {
+                    Toast.makeText(MainActivity.this, "dispositivo associato", Toast.LENGTH_LONG).show();
+                    mBluetoothGatt= device.connectGatt(context, false, mGattCallback);
+                    //BluetoothSocket tmp = null;
+                    //mmDevice = device;
+                    //String name = "fwefwrf";
+                    //myUUID = UUID.fromString(name);
+                    //try {
+                    //tmp = device.createRfcommSocketToServiceRecord(myUUID);
+                    //}
+                    //      catch (IOException e) {
+                    //        Toast.makeText(MainActivity.this,"inusual UUID", Toast.LENGTH_LONG).show();
+                    //  }
+                    //try {
+                    //  mmSocket.connect();
+                    //}
+                    //catch (IOException connectException) {
+                    // Unable to connect; close the socket and get out
+                    //  Toast.makeText(MainActivity.this,"inusual socket connection", Toast.LENGTH_LONG).show();
+                    //try {
+                    //   mmSocket.close();
+                    //} catch (IOException closeException) { }
+                    //return;
+                    //   }
+                }
             }
         }
     };
-//qui viene creato il broadcast receiver e inpostato per ascoltare il bluetooth e i suoi stati generalizzati
+    //qui viene creato il broadcast receiver e inpostato per ascoltare il bluetooth e i suoi stati generalizzati
     private final BroadcastReceiver mBroadcastReceiver1 = new BroadcastReceiver() {
 
         @Override
@@ -70,7 +173,7 @@ public class MainActivity extends Activity {
             if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
                 //qui uno switch con le varie reazioni che si vuole dare a seconda di quello che sente il broadcast receiver
-                switch(state) {
+                switch (state) {
                     case BluetoothAdapter.STATE_OFF:
                         req.setText("Bluetooth disabled!");
                         break;
@@ -93,11 +196,10 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         btAdapter = BluetoothAdapter.getDefaultAdapter();
-        String[] bluetoothname ={""};
-        adapter=new  ArrayAdapter(this,android.R.layout.simple_list_item_1,bluetoothname);
-        ListView lv = (ListView)findViewById(R.id.listView);
+        String[] bluetoothname = {""};
+        adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, bluetoothname);
+        ListView lv = (ListView) findViewById(R.id.listView);
         lv.setAdapter(adapter);
-
 
 
         //qui nel onCreate la memorizzazione formale di stati precedenti per il controllo di cambio
@@ -128,7 +230,7 @@ public class MainActivity extends Activity {
         }
         //qui l'ascolto al tasto per abilitare o disabilitare il bluetooth dall'interno
         //dell'aplicazione
-        Button btnHome=(Button)findViewById(R.id.button);
+        Button btnHome = (Button) findViewById(R.id.button);
         btnHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
@@ -144,37 +246,27 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        }
+    }
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode==BLUETOOTH_ON && resultCode==RESULT_OK)
-        {
+        if (requestCode == BLUETOOTH_ON && resultCode == RESULT_OK) {
             load();
         }
     }
-    public void scan(View v)
-    {
-        if (!btAdapter.isEnabled())
-        {
+
+    public void scan(View v) {
+        if (!btAdapter.isEnabled()) {
             Intent turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(turnOn, BLUETOOTH_ON);
-        }
-        else
+        } else
             load();
     }
-    private void load()
-    {
+
+    private void load() {
         btAdapter.startDiscovery();
-      //  Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-            // Loop through paired devices
-            //for (BluetoothDevice device : pairedDevices) {
-                // Add the name and address to an array adapter to show in a ListView
-
-        //    }
-        }
-
+    }
 
 
     //qui la distruzione
@@ -185,7 +277,8 @@ public class MainActivity extends Activity {
 
     }
 
-    }
+
+}
 
 
 
