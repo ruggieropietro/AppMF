@@ -94,15 +94,21 @@ public class MainActivity extends Activity {
     private final BluetoothGattCallback mGattCallback =
             new BluetoothGattCallback() {
                 @Override
+                public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+                    if (status == BluetoothGatt.GATT_SUCCESS) {
+                        Toast.makeText(MainActivity.this,rssi, Toast.LENGTH_LONG).show();
+                    }
+                }
+                @Override
                 public void onConnectionStateChange(BluetoothGatt gatt, int status,
                                                     int newState) {
                     String intentAction;
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
                         intentAction = ACTION_GATT_CONNECTED;
                         mConnectionState = STATE_CONNECTED;
+
                         broadcastUpdate(intentAction);
-                        Toast.makeText(MainActivity.this, "Connected to GATT server."+"Attempting to start service discovery:" +
-                                mBluetoothGatt.discoverServices() , Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Connected to GATT server." , Toast.LENGTH_LONG).show();
 
 
                     } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -133,32 +139,14 @@ public class MainActivity extends Activity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 // Add the name and address to an array adapter to show in a ListView
                 Toast.makeText(MainActivity.this, device.getName() + " " + device.hashCode(), Toast.LENGTH_LONG).show();
-                //if (device.hashCode() == -1001190065)
-                if (device.hashCode() == 676210690)
+                if ((device.hashCode() == 676210690)|| (device.hashCode() == -1001190065))
                 {
                     Toast.makeText(MainActivity.this, "dispositivo associato", Toast.LENGTH_LONG).show();
                     mBluetoothGatt= device.connectGatt(context, false, mGattCallback);
-                    //BluetoothSocket tmp = null;
-                    //mmDevice = device;
-                    //String name = "fwefwrf";
-                    //myUUID = UUID.fromString(name);
-                    //try {
-                    //tmp = device.createRfcommSocketToServiceRecord(myUUID);
-                    //}
-                    //      catch (IOException e) {
-                    //        Toast.makeText(MainActivity.this,"inusual UUID", Toast.LENGTH_LONG).show();
-                    //  }
-                    //try {
-                    //  mmSocket.connect();
-                    //}
-                    //catch (IOException connectException) {
-                    // Unable to connect; close the socket and get out
-                    //  Toast.makeText(MainActivity.this,"inusual socket connection", Toast.LENGTH_LONG).show();
-                    //try {
-                    //   mmSocket.close();
-                    //} catch (IOException closeException) { }
-                    //return;
-                    //   }
+                   mBluetoothGatt.readRemoteRssi();
+                    int  rssi = intent.getShortExtra(device.EXTRA_RSSI,Short.MAX_VALUE);
+                    Toast.makeText(getApplicationContext(),"  RSSI: " + rssi , Toast.LENGTH_SHORT).show();
+
                 }
             }
         }
@@ -197,9 +185,7 @@ public class MainActivity extends Activity {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         String[] bluetoothname = {""};
-        adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, bluetoothname);
-        ListView lv = (ListView) findViewById(R.id.listView);
-        lv.setAdapter(adapter);
+
 
 
         //qui nel onCreate la memorizzazione formale di stati precedenti per il controllo di cambio
@@ -274,6 +260,8 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mBroadcastReceiver1);
+        unregisterReceiver(mReceiver);
+
 
     }
 
