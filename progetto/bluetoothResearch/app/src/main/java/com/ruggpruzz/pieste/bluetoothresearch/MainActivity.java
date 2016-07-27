@@ -21,50 +21,24 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothProfile;
-import android.bluetooth.BluetoothServerSocket;
-import android.bluetooth.BluetoothSocket;
-import android.bluetooth.le.BluetoothLeScanner;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
-
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.UUID;
-import java.io.IOException;
-
 
 public class MainActivity extends Activity {
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothAdapter btAdapter;
-    private Set<BluetoothDevice> dispositivi;
-    private ListView lv;
-    private ArrayAdapter<String> adapter = null;
     private static final int BLUETOOTH_ON = 1000;
-    private BluetoothSocket mmSocket;
-    private BluetoothDevice mmDevice;
-    private UUID myUUID;
     private BluetoothGatt mBluetoothGatt =null;
     private static final int STATE_DISCONNECTED = 0;
-    private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
 
     public final static String ACTION_GATT_CONNECTED =
@@ -73,11 +47,7 @@ public class MainActivity extends Activity {
             "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
     public final static String ACTION_GATT_SERVICES_DISCOVERED =
             "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
-    public final static String ACTION_DATA_AVAILABLE =
-            "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_DATA =
-            "com.example.bluetooth.le.EXTRA_DATA";
-    private int mConnectionState = STATE_DISCONNECTED;
+    public int mConnectionState = STATE_DISCONNECTED;
 
 
 
@@ -85,11 +55,6 @@ public class MainActivity extends Activity {
         final Intent intent = new Intent(action);
         sendBroadcast(intent);
     }
-
-
-
-
-
     // Various callback methods defined by the BLE API.
     private final BluetoothGattCallback mGattCallback =
             new BluetoothGattCallback() {
@@ -130,8 +95,9 @@ public class MainActivity extends Activity {
                 }
 
             };
+
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
+        public  void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             // When discovery finds a device
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
@@ -144,9 +110,9 @@ public class MainActivity extends Activity {
                     Toast.makeText(MainActivity.this, "dispositivo associato", Toast.LENGTH_LONG).show();
                     mBluetoothGatt= device.connectGatt(context, false, mGattCallback);
                    mBluetoothGatt.readRemoteRssi();
-                    int  rssi = intent.getShortExtra(device.EXTRA_RSSI,Short.MAX_VALUE);
-                    Toast.makeText(getApplicationContext(),"  RSSI: " + rssi , Toast.LENGTH_SHORT).show();
-
+                     int  rssi = intent.getShortExtra(device.EXTRA_RSSI,  Short.MAX_VALUE);
+                    TextView Rssitext = (TextView) findViewById(R.id.textView8);
+                    Rssitext.setText("RSSI"+ rssi);
                 }
             }
         }
@@ -184,9 +150,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         btAdapter = BluetoothAdapter.getDefaultAdapter();
-        String[] bluetoothname = {""};
-
-
 
         //qui nel onCreate la memorizzazione formale di stati precedenti per il controllo di cambio
         //degli stati
@@ -224,11 +187,11 @@ public class MainActivity extends Activity {
                 TextView req = (TextView) findViewById(R.id.textView2);
                 if (!mBluetoothAdapter.isEnabled()) {
                     mBluetoothAdapter.enable();
-                    req.setText("Bluetooth abled");
+                    req.setText("Bluetooth abled!");
 
                 } else {
                     mBluetoothAdapter.disable();
-                    req.setText("Bluetooth disabled");
+                    req.setText("Bluetooth disabled!");
                 }
             }
         });
