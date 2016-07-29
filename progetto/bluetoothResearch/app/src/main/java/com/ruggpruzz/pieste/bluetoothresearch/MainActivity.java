@@ -16,12 +16,17 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 public class MainActivity extends Activity {
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothGatt mBluetoothGatt =null;
     private BluetoothAdapter btAdapter;
     public  int staticrssi=0;
+    public static int stateconnected=0;
+    public final static String gattconnected ="connection gate";
+    public final static String gattdisconnected ="disconnection gate";
+
 
     // Various callback methods defined by the BLE API.
     private final BluetoothGattCallback mGattCallback =
@@ -32,13 +37,45 @@ public class MainActivity extends Activity {
                 }
                 @Override
                 public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+                    super.onConnectionStateChange(gatt, status, newState);
                     String intentAction;
-                    if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    if (status != BluetoothGatt.GATT_SUCCESS) {
+                        gatt.disconnect();
+                        return;
+                    }
+                    if ((newState == BluetoothProfile.STATE_CONNECTED ))
+                    {
                         mBluetoothGatt.readRemoteRssi();
+                        intentAction = gattconnected;
+                        broadcastUpdate(intentAction);
+
+                    }
+                    else if ((newState == BluetoothProfile.STATE_DISCONNECTED ))
+                    {
+                        intentAction = gattdisconnected;
+                        broadcastUpdate(intentAction);
+                        gatt.close();
                     }
                 }
-                    };
 
+                    };
+    //QUESTO BROADCAST UPDATE SERVE A FARE COMUNICARE IL GATTCALBAC (onconnectionstatechange)K E E L'ACTIVITY PER CAMBIARE LA
+    //STRINGA 10,QUELLA DOVE C'è SCRITTO LO STATO DELLA CONNESSIONE
+    private void broadcastUpdate(final String action) {
+        final Intent intent = new Intent(action);
+        sendBroadcast(intent);
+        TextView gattconn = (TextView) findViewById(R.id.textView10);
+        Toast.makeText(MainActivity.this,"we are here2" + action, Toast.LENGTH_LONG).show();
+        if (action=="connection gate") {
+            gattconn.setText("Connecting");
+        }
+        else
+        {
+            gattconn.setText("disconetting");
+        }
+
+    }
+//QUESTO DOVREBBE DIVENTARE IL onlescanCALLBACK
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public  void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -56,6 +93,7 @@ public class MainActivity extends Activity {
             }
         }
     };
+
 
     //qui viene creato il broadcast receiver e inpostato per ascoltare il bluetooth e i suoi stati generalizzati
     private final BroadcastReceiver mBroadcastReceiver1 = new BroadcastReceiver() {
@@ -83,9 +121,11 @@ public class MainActivity extends Activity {
             }
         }
     };
-    @Override
+
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -95,7 +135,15 @@ public class MainActivity extends Activity {
         registerReceiver(mBroadcastReceiver1, filter1);
         IntentFilter filter2 = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(mReceiver, filter2);
-        TextView tv = (TextView) findViewById(R.id.textView);
+        TextView gattconn = (TextView) findViewById(R.id.textView10);
+        if (stateconnected==1) {
+            gattconn.setText("Connecting");
+        }
+        else
+        {
+            gattconn.setText("disconetting");
+        }
+            TextView tv = (TextView) findViewById(R.id.textView);
         TextView req = (TextView) findViewById(R.id.textView2);
         //qui il controllo con textView e toast riguardo la verifica di esistenza del bluetooth interno
         if (mBluetoothAdapter == null) {
@@ -129,6 +177,7 @@ public class MainActivity extends Activity {
                 }
             }
         });
+
         Button rssirefresh = (Button) findViewById(R.id.button3);
         rssirefresh.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -136,6 +185,8 @@ public class MainActivity extends Activity {
                 mBluetoothGatt.readRemoteRssi();
                 TextView reqrssi = (TextView) findViewById(R.id.textView8);
                 reqrssi.setText("RSSI"+staticrssi);
+
+
             }
         });
     }

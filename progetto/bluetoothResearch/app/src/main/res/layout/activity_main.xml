@@ -36,7 +36,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Estimate Distance"
+        android:text="Research "
         android:id="@+id/button2"
         android:onClick="scan"
         android:layout_below="@+id/textView2"
@@ -87,15 +87,56 @@
         android:layout_height="wrap_content"
         android:text="RSSI"
         android:id="@+id/textView8"
-        android:layout_below="@+id/button2"
+        android:layout_below="@+id/button3"
         android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Button"
+        android:text="Estimate Distance"
         android:id="@+id/button3"
-        android:layout_below="@+id/textView8"
+        android:layout_below="@+id/textView10"
         android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="State research"
+        android:id="@+id/textView9"
+        android:layout_below="@+id/button2"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="state connection"
+        android:id="@+id/textView10"
+        android:layout_below="@+id/textView9"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="uuid"
+        android:id="@+id/textView11"
+        android:layout_alignTop="@+id/button2"
+        android:layout_alignParentEnd="true" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/switch1"
+        android:layout_alignBaseline="@+id/button3"
+        android:layout_alignBottom="@+id/button3"
+        android:layout_alignParentEnd="true"
+        android:checked="false" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="automatic refresh"
+        android:id="@+id/textView12"
+        android:layout_alignTop="@+id/textView10"
+        android:layout_alignEnd="@+id/switch1" />
 
 </RelativeLayout>
