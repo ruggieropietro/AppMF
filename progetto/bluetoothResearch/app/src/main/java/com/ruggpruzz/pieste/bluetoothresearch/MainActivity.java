@@ -10,11 +10,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MainActivity extends Activity {
@@ -23,9 +34,9 @@ public class MainActivity extends Activity {
     private BluetoothGatt mBluetoothGatt =null;
     private BluetoothAdapter btAdapter;
     public  int staticrssi=0;
-    public static int stateconnected=0;
-    public final static String gattconnected ="connection gate";
-    public final static String gattdisconnected ="disconnection gate";
+    public    int hash =  1001190065;
+public CheckBox refreshcheck;
+    static boolean refreshbool = true;
 
 
     // Various callback methods defined by the BLE API.
@@ -38,43 +49,11 @@ public class MainActivity extends Activity {
                 @Override
                 public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
                     super.onConnectionStateChange(gatt, status, newState);
-                    String intentAction;
-                    if (status != BluetoothGatt.GATT_SUCCESS) {
-                        gatt.disconnect();
-                        return;
-                    }
-                    if ((newState == BluetoothProfile.STATE_CONNECTED ))
-                    {
-                        mBluetoothGatt.readRemoteRssi();
-                        intentAction = gattconnected;
-                        broadcastUpdate(intentAction);
-
-                    }
-                    else if ((newState == BluetoothProfile.STATE_DISCONNECTED ))
-                    {
-                        intentAction = gattdisconnected;
-                        broadcastUpdate(intentAction);
-                        gatt.close();
-                    }
+                    Log.d("TAG","is" + newState);
                 }
 
                     };
-    //QUESTO BROADCAST UPDATE SERVE A FARE COMUNICARE IL GATTCALBAC (onconnectionstatechange)K E E L'ACTIVITY PER CAMBIARE LA
-    //STRINGA 10,QUELLA DOVE C'è SCRITTO LO STATO DELLA CONNESSIONE
-    private void broadcastUpdate(final String action) {
-        final Intent intent = new Intent(action);
-        sendBroadcast(intent);
-        TextView gattconn = (TextView) findViewById(R.id.textView10);
-        Toast.makeText(MainActivity.this,"we are here2" + action, Toast.LENGTH_LONG).show();
-        if (action=="connection gate") {
-            gattconn.setText("Connecting");
-        }
-        else
-        {
-            gattconn.setText("disconetting");
-        }
 
-    }
 //QUESTO DOVREBBE DIVENTARE IL onlescanCALLBACK
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public  void onReceive(Context context, Intent intent) {
@@ -86,9 +65,10 @@ public class MainActivity extends Activity {
 
                 // Add the name and address to an array adapter to show in a ListView
                 Toast.makeText(MainActivity.this, device.getName() + " " + device.hashCode(), Toast.LENGTH_LONG).show();
-                if ((device.hashCode() == 676210690)|| (device.hashCode() == -1001190065))
+                if ((Math.abs(device.hashCode())== hash))
                 {
-                    mBluetoothGatt= device.connectGatt(context, false, mGattCallback);
+                    mBluetoothGatt= device.connectGatt(context,false, mGattCallback);
+
                 }
             }
         }
@@ -122,9 +102,41 @@ public class MainActivity extends Activity {
         }
     };
 
+    protected void refreshrssi() {
 
-    protected void onCreate(Bundle savedInstanceState) {
+        if (refreshbool) {
+            try {
+                mBluetoothGatt.readRemoteRssi();
+                TextView reqrssi = (TextView) findViewById(R.id.textView8);
+                reqrssi.setText("RSSI " + staticrssi);
+            } catch (NullPointerException e) {
+                Toast.makeText(MainActivity.this, "GATT d'ont connected", Toast.LENGTH_LONG).show();
+            }
+
+
+        }
+    }
+
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SharedPreferences settings = getSharedPreferences("hash",hash);
+
+
+
+        hash = settings.getInt("hash", 1001190065);
+
+        new CountDownTimer(1000, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            public void onFinish() {
+                refreshrssi();
+                start();
+            }
+        }.start();
 
         setContentView(R.layout.activity_main);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -135,22 +147,14 @@ public class MainActivity extends Activity {
         registerReceiver(mBroadcastReceiver1, filter1);
         IntentFilter filter2 = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(mReceiver, filter2);
-        TextView gattconn = (TextView) findViewById(R.id.textView10);
-        if (stateconnected==1) {
-            gattconn.setText("Connecting");
-        }
-        else
-        {
-            gattconn.setText("disconetting");
-        }
             TextView tv = (TextView) findViewById(R.id.textView);
         TextView req = (TextView) findViewById(R.id.textView2);
         //qui il controllo con textView e toast riguardo la verifica di esistenza del bluetooth interno
         if (mBluetoothAdapter == null) {
-            tv.setText("Internal Bluetooth not found!");
+            tv.setText("HD not found");
             Toast.makeText(MainActivity.this, "Internal bluetooth not found! ", Toast.LENGTH_SHORT).show();
         } else {
-            tv.setText("InternalBluetooth  found!");
+            tv.setText("HD found");
             if (!mBluetoothAdapter.isEnabled()) {
                 mBluetoothAdapter.enable();
                 req.setText("Bluetooth abled!");
@@ -159,6 +163,8 @@ public class MainActivity extends Activity {
                 req.setText("Bluetooth disabled!");
             }
         }
+        TextView hashtext = (TextView) findViewById(R.id.textView11);
+        hashtext.setText(""+hash);
         //qui l'ascolto al tasto per abilitare o disabilitare il bluetooth dall'interno
         //dell'aplicazione
         Button btnHome = (Button) findViewById(R.id.button);
@@ -177,22 +183,71 @@ public class MainActivity extends Activity {
                 }
             }
         });
+        Button savehash = (Button) findViewById(R.id.button4);
+        savehash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                try {
+                    TextView hashsave = (EditText) findViewById(R.id.editText);
+                    hash = Integer.parseInt(hashsave.getText().toString());
+                    SharedPreferences settings = getSharedPreferences("hash", hash);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putInt("hash",hash );
 
+                    editor.commit();
+                    TextView req = (TextView) findViewById(R.id.textView11);
+                    req.setText("" + hash);
+                    mBluetoothAdapter.disable();
+                }
+                catch(NumberFormatException e) {
+                    Toast.makeText(MainActivity.this,"invalid insert", Toast.LENGTH_LONG).show();
+                }
+
+            }
+
+        });
+        refreshcheck = (CheckBox)findViewById(R.id.checkBox);
+        refreshcheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+                                                    @Override
+                                                    public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
+if (isChecked)
+
+{
+    Toast.makeText(MainActivity.this,"checked", Toast.LENGTH_LONG).show();
+    refreshbool=true;
+}
+                                                        else
+{
+    Toast.makeText(MainActivity.this,"unchecked", Toast.LENGTH_LONG).show();
+    refreshbool=false;
+}
+
+                                                    }
+                                                }
+        );
         Button rssirefresh = (Button) findViewById(R.id.button3);
         rssirefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
-                mBluetoothGatt.readRemoteRssi();
-                TextView reqrssi = (TextView) findViewById(R.id.textView8);
-                reqrssi.setText("RSSI"+staticrssi);
+try {
+    mBluetoothGatt.readRemoteRssi();
+    TextView reqrssi = (TextView) findViewById(R.id.textView8);
+    reqrssi.setText("RSSI " + staticrssi);
 
+}
+catch (NullPointerException e) {
+    Toast.makeText(MainActivity.this,"GATT d'ont connected", Toast.LENGTH_LONG).show();
+}
 
             }
         });
     }
+
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+      super.onActivityResult(requestCode, resultCode, data);
             load();
     }
     public void scan(View v) {
@@ -205,13 +260,17 @@ public class MainActivity extends Activity {
     private void load() {
         btAdapter.startDiscovery();
     }
+
     //qui la distruzione
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mBroadcastReceiver1);
         unregisterReceiver(mReceiver);
+        mBluetoothAdapter.disable();
     }
+
+
 }
 
 
