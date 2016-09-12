@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.wifi.ScanResult;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -34,72 +35,84 @@ public class MainActivity extends Activity
     private BluetoothGatt mBluetoothGatt = null;
     private BluetoothAdapter btAdapter;
     public int staticrssi = 0;
-    public int hash = 1001190065;
+    public int mac = 1001190065;
     public boolean research = false;
     public boolean connect = false;
     public boolean analize = false;
     //il primo gestore di eventi deve riguardare la scanerizzazione,ovvero quando il dispositivo cerca  altri dispositivi in zona questi prendono il nome di associati
     //in questo broadcast receiver vogliamo sostituire il onlescancallback,siccome ci sono problemi di compatibilità,questo perchè alcune librerie sono deprecate da dopo il 20
     //ma la tecnologia BLE era già arrivata al  API 18,avendo quindi un dispositivo API 19 si devono aooviare alcuni problemi.
+    private final BluetoothAdapter.LeScanCallback mScanCallback =
+            new BluetoothAdapter.LeScanCallback()
+            {
+                @Override
+                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                    //quando viene trovato un associato
+
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                        //analize è una variabile booleana,l scanerizazione viene chiamata da 2 tasti,il primo ,quando analize è vero,serve solo a vedere e annunciare
+                        //i dispositivi bluetooth associati su toast,il motivo è conoscere i codici hash dei dispositivi,come si vedrà nell'activity sarà possibile
+                        //utilizzare la preference del codice hash preferito
+                        if (analize)
+                        {
+                            Toast.makeText(MainActivity.this, device.getName() + " " + device.getAddress(), Toast.LENGTH_LONG).show();
+                        }
+                        //nell'altro caso ,il dispositivo non deve annunciare con i toast del trovamento di altri dispositivi,ma deve solo conettersi al dispositivo
+                        //con il codice hash preferito,facendo cosi sarà possibile utilizzare l'app universalmente e con il dispositivo preferito
+                        //già inserito a ogni avvio
+                        if (device.getAddress() == Integer.toString(mac))
+                        {
+                            if (!analize)
+                            {
+                                //qui si connette se trova il dispositivo con il codice hash
+                                Connection(device);
+                                connect = true;
+                                TextView req = (TextView) findViewById(R.id.textView2);
+                                req.setText("Calculated");
+                            }
+                            //la tecnologia BLE è otimizzata al risparmio energetico,una delle sue caratteristiche è quindi la disconessione automatica
+                            //qunando non c'è un flusso di dati ,in input o output,da piu' di 12 secondi,siccome noi non possiamo abattere questa regol HW
+                            //siamo costretti a chiudere tutto dopo questi 12 secondi
+                            new CountDownTimer(12000, 1000)
+                            {
+                                public void onTick(long millisUntilFinished)
+                                {
+                                }
+                                public void onFinish()
+                                {
+                                    //in ogni caso di analize "resetta" gli stati del bluetooth adapter,quello utile per lo scan
+                                    mBluetoothAdapter.cancelDiscovery();
+                                    mBluetoothAdapter.disable();
+                                    //invece nel caso in cui ci si era connessi llora disconetti tutto e chiudi il gatt
+                                    if (!analize)
+                                    {
+                                        mBluetoothGatt.disconnect();
+                                        mBluetoothGatt.close();
+                                        connect = false;
+                                        TextView reqrssi = (TextView) findViewById(R.id.textView8);
+                                        reqrssi.setText("RSSI ");
+                                        TextView req = (TextView) findViewById(R.id.textView2);
+                                        req.setText("Not connecting");
+                                    }
+                                }
+                            }.start();
+                        }
+
+                            }
+                        });
+                    }
+
+            };
     private final BroadcastReceiver mReceiver = new BroadcastReceiver()
     {
         public void onReceive(Context context, Intent intent)
         {
             String action = intent.getAction();
-            //quando viene trovato un associato
-            if (BluetoothDevice.ACTION_FOUND.equals(action))
-            {
-                //per gestire l'analisi degli associati, quando li si trova ,gli si deve assegnare un oggetto,per poterlo analizzare,android studio fornisce
-                //l'ogetto bluetooth devide
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                //analize è una variabile booleana,l scanerizazione viene chiamata da 2 tasti,il primo ,quando analize è vero,serve solo a vedere e annunciare
-                //i dispositivi bluetooth associati su toast,il motivo è conoscere i codici hash dei dispositivi,come si vedrà nell'activity sarà possibile
-                //utilizzare la preference del codice hash preferito
-                if (analize)
-                {
-                    Toast.makeText(MainActivity.this, device.getName() + " " + device.hashCode(), Toast.LENGTH_LONG).show();
-                }
-                //nell'altro caso ,il dispositivo non deve annunciare con i toast del trovamento di altri dispositivi,ma deve solo conettersi al dispositivo
-                //con il codice hash preferito,facendo cosi sarà possibile utilizzare l'app universalmente e con il dispositivo preferito
-                //già inserito a ogni avvio
-                if ((Math.abs(device.hashCode()) == hash))
-                {
-                    if (!analize)
-                    {
-                        //qui si connette se trova il dispositivo con il codice hash
-                        mBluetoothGatt = device.connectGatt(context, false, mGattCallback);
-                        connect = true;
-                        TextView req = (TextView) findViewById(R.id.textView2);
-                        req.setText("Calculated");
-                    }
-                    //la tecnologia BLE è otimizzata al risparmio energetico,una delle sue caratteristiche è quindi la disconessione automatica
-                    //qunando non c'è un flusso di dati ,in input o output,da piu' di 12 secondi,siccome noi non possiamo abattere questa regol HW
-                    //siamo costretti a chiudere tutto dopo questi 12 secondi
-                    new CountDownTimer(12000, 1000)
-                    {
-                        public void onTick(long millisUntilFinished)
-                        {
-                        }
-                        public void onFinish()
-                        {
-                            //in ogni caso di analize "resetta" gli stati del bluetooth adapter,quello utile per lo scan
-                            mBluetoothAdapter.cancelDiscovery();
-                            mBluetoothAdapter.disable();
-                            //invece nel caso in cui ci si era connessi llora disconetti tutto e chiudi il gatt
-                            if (!analize)
-                            {
-                                mBluetoothGatt.disconnect();
-                                mBluetoothGatt.close();
-                                connect = false;
-                                TextView reqrssi = (TextView) findViewById(R.id.textView8);
-                                reqrssi.setText("RSSI ");
-                                TextView req = (TextView) findViewById(R.id.textView2);
-                                req.setText("Not connecting");
-                            }
-                        }
-                    }.start();
-                }
-            }
+
         }
     };
     //questo è un gestore di eventi piu' ufficioso del broadcast receiver usato per lo scan ,infatti useremo il gattcallback come "contratto"
@@ -131,8 +144,8 @@ public class MainActivity extends Activity
 //abbiamo pensato fosse utile ,visti i problemi di compatibilità descritti in precedenza,efettuare da subito un controllo API
         if ((Build.VERSION.SDK_INT < 21) && (Build.VERSION.SDK_INT > 17)) {
             //questo è la preferenza del codice hash preferito,serve a poterlo salvare ed averlo a ogni avvio
-            SharedPreferences settings = getSharedPreferences("hash", hash);
-            hash = settings.getInt("hash", 1001190065);
+            SharedPreferences settings = getSharedPreferences("mac", mac);
+            mac = settings.getInt("mac", 1001190065);
             //il countdown serve a refreshare l'rssi,ovvero siccome la conessione resta per circa 12 secondi ,noi una volta conessi avremo un refresh dell'rssi
             //ogni secondo finche la conessione resta attiva
             new CountDownTimer(1000, 1000) {
@@ -159,7 +172,7 @@ public class MainActivity extends Activity
                 Toast.makeText(MainActivity.this, "Internal bluetooth not found! ", Toast.LENGTH_SHORT).show();
             }
             TextView hashtext = (TextView) findViewById(R.id.textView11);
-            hashtext.setText("" + hash);
+            hashtext.setText("" + mac);
         }
         //come detto prima siamo subito a conoscenza anche per le problematiche di compatibilità,pultroppo possibili nel nostro caso specifico
         else
@@ -205,7 +218,7 @@ public class MainActivity extends Activity
         }
     }
     //scan è utilizzato dal tasto utile a rilevare e annunciare i dispositivi associati,la differenza è ottenuta con la variabile booleana analize
-    public void otherhash(View v)
+    public void otherMac(View v)
     {
         analize = true;
         if (!btAdapter.isEnabled())
@@ -245,7 +258,7 @@ public class MainActivity extends Activity
         research = true;
         TextView reqrssi = (TextView) findViewById(R.id.textView9);
         reqrssi.setText("Scanning ");
-        btAdapter.startDiscovery();
+        btAdapter.startLeScan(mScanCallback);
         new CountDownTimer(12000, 1000)
         {
             int punti = 0;
@@ -288,31 +301,35 @@ public class MainActivity extends Activity
                     // e se quest'ultimo non è stato trovato lo dobbiamo annunciare
                     if (!analize)
                     {
-                        Toast.makeText(MainActivity.this, "Not found " + hash, Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Not found " + mac, Toast.LENGTH_LONG).show();
                     }
                 }
             }
         }.start();
     }
-    //l'ultimo metodo chiamato da un bottone è quello utile a salvare la preference hash
-    public void savehash(View v)
+    //l'ultimo metodo chiamato da un bottone è quello utile a salvare la preference mac
+    public void saveMac(View v)
     {
         try
         {
             TextView hashsave = (EditText) findViewById(R.id.editText);
-            hash = Integer.parseInt(hashsave.getText().toString());
-            SharedPreferences settings = getSharedPreferences("hash", hash);
+            mac = Integer.parseInt(hashsave.getText().toString());
+            SharedPreferences settings = getSharedPreferences("mac", mac);
             SharedPreferences.Editor editor = settings.edit();
-            editor.putInt("hash", hash);
+            editor.putInt("mac", mac);
             editor.commit();
             TextView req = (TextView) findViewById(R.id.textView11);
-            req.setText("" + hash);
+            req.setText("" + mac);
             mBluetoothAdapter.disable();
         }
         catch (NumberFormatException e)
         {
             Toast.makeText(MainActivity.this, "invalid insert", Toast.LENGTH_LONG).show();
         }
+    }
+    public void Connection(BluetoothDevice device)
+    {
+            mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
     }
 }
 //considerazioni finali:
