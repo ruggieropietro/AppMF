@@ -131,6 +131,13 @@
             android:layout_alignEnd="@+id/editText"
             android:layout_column="0"
             android:textColor="#94f7f3" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="count"
+            android:id="@+id/tvcount"
+            android:layout_column="5" />
     </TableRow>
 
     <TableRow
@@ -146,12 +153,25 @@
             android:layout_alignEnd="@+id/textView11"
             android:layout_column="0"
             android:textColor="#94f7f3" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Medium"
+            android:id="@+id/tvmedium"
+            android:layout_column="5" />
     </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stima"
+            android:id="@+id/tvEstimate"
+            android:layout_column="5" />
     </TableRow>
 
     <TableRow
@@ -256,17 +276,6 @@
             android:layout_alignEnd="@+id/textView10"
             android:layout_column="0"
             android:textColor="#94f7f3" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ListView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/listView"
-            android:layout_column="0" />
     </TableRow>
 
     <TableRow

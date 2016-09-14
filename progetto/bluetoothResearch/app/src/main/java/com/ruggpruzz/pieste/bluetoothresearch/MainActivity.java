@@ -29,6 +29,13 @@ public class MainActivity extends Activity {
     public boolean research = false;
     public boolean connect = false;
     private String rssiString="";
+    private double c3= -0.00000030899;
+    private double c2= -0.000069142;
+    private double c1= -0.00522257;
+    private double c0= -0.12794642;
+    private float mediumValue=0;
+    private int count=0;
+    private double stima =0;
     //il primo gestore di eventi deve riguardare la scanerizzazione,ovvero quando il dispositivo cerca  altri dispositivi in zona questi prendono il nome di associati
     //in questo broadcast receiver vogliamo sostituire il onlescancallback,siccome ci sono problemi di compatibilità,questo perchè alcune librerie sono deprecate da dopo il 20
     //ma la tecnologia BLE era già arrivata al  API 18,avendo quindi un dispositivo API 19 si devono aooviare alcuni problemi.
@@ -44,8 +51,11 @@ public class MainActivity extends Activity {
                         @Override
                         public void run() {
                             Log.i("", "MAC: " + device.getAddress());
-                            Log.i("", "RSSIPIPPA: " + rssi);
+                            Log.i("", "RSSI: " + rssi);
                             rssiString = rssiString + "\n" + rssi;
+                            mediumValue=mediumValue+rssi;
+                            Log.d("MEDIO",""+ mediumValue);
+                            count++;
                             //analize è una variabile booleana,l scanerizazione viene chiamata da 2 tasti,il primo ,quando analize è vero,serve solo a vedere e annunciare
                             //i dispositivi bluetooth associati su toast,il motivo è conoscere i codici hash dei dispositivi,come si vedrà nell'activity sarà possibile
                             //utilizzare la preference del codice hash preferito
@@ -173,6 +183,27 @@ public class MainActivity extends Activity {
                 reqrssi.setText("Not scanning ");
                 research = false;
                 btAdapter.stopLeScan(mScanCallback);
+                mediumValue=mediumValue/count;
+                TextView tvCount = (TextView) findViewById(R.id.tvcount);
+                tvCount.setText("" + count);
+                TextView tvMedium = (TextView) findViewById(R.id.tvmedium);
+                tvMedium.setText("" + mediumValue);
+                double terza = Math.pow(mediumValue,3.0);
+                double seconda = Math.pow(mediumValue,2.0);
+
+
+                Log.d("STIMA",""+c3);
+                Log.d("STIMA",""+c2);
+                Log.d("STIMA",""+c1);
+                Log.d("STIMA",""+c0);
+                Log.d("POTENZA",""+terza);
+                Log.d("POTENZA",""+seconda);
+                stima=(c3*terza+c2*seconda+c1*mediumValue+c0)*1000;
+                TextView tvStima = (TextView) findViewById(R.id.tvEstimate);
+                tvStima.setText("" + stima +"m");
+                mediumValue=0;
+                count=0;
+
                 //a fine ricerca se non si è connesso si si disabilità il bluetooth interno,questo perchè
                 //si vuole rispettare le regole di risparmio energetico BLE e quindi spegnere il bluetooth
                 //nel caso fosse conness se ne occuperebbe il codice dopo i 12 secondi di conessione visti in precedenza
