@@ -22,20 +22,30 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 public class MainActivity extends Activity {
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothAdapter btAdapter;
     public String mac = "E1:D4:23:D7:61:7D";
+
     public boolean research = false;
     public boolean connect = false;
     private String rssiString="";
+    //Coefficenti del calcolo approssimato polinomiale
     private double c3= -0.00000030899;
     private double c2= -0.000069142;
     private double c1= -0.00522257;
     private double c0= -0.12794642;
     private float mediumValue=0;
     private int count=0;
+    private int capo=0;
+    //Coefficenti del calcolo approssimato lineare LAM
+    private int a=-70;
+    private double k=0.066;
     private double stima =0;
+    private double stimaLam=0;
+    private boolean debug=false;
     //il primo gestore di eventi deve riguardare la scanerizzazione,ovvero quando il dispositivo cerca  altri dispositivi in zona questi prendono il nome di associati
     //in questo broadcast receiver vogliamo sostituire il onlescancallback,siccome ci sono problemi di compatibilità,questo perchè alcune librerie sono deprecate da dopo il 20
     //ma la tecnologia BLE era già arrivata al  API 18,avendo quindi un dispositivo API 19 si devono aooviare alcuni problemi.
@@ -52,10 +62,25 @@ public class MainActivity extends Activity {
                         public void run() {
                             Log.i("", "MAC: " + device.getAddress());
                             Log.i("", "RSSI: " + rssi);
-                            rssiString = rssiString + "\n" + rssi;
-                            mediumValue=mediumValue+rssi;
-                            Log.d("MEDIO",""+ mediumValue);
-                            count++;
+                            boolean uguale =mac.equals(device.getAddress());
+                            if(uguale)
+                            {
+                                capo++;
+                                if (capo==2)
+                                {
+                                    rssiString=rssiString+"\n";
+                                    capo=0;
+                                }
+
+                                rssiString = rssiString + rssi;
+                                mediumValue=mediumValue+rssi;
+                                count++;
+                                Log.d("MEDIO",""+ mediumValue);
+                                Log.d("UGUALE","entrati nell'if");
+                                AddItem(device.getAddress(), rssiString);
+                            }
+
+
                             //analize è una variabile booleana,l scanerizazione viene chiamata da 2 tasti,il primo ,quando analize è vero,serve solo a vedere e annunciare
                             //i dispositivi bluetooth associati su toast,il motivo è conoscere i codici hash dei dispositivi,come si vedrà nell'activity sarà possibile
                             //utilizzare la preference del codice hash preferito
@@ -174,13 +199,13 @@ public class MainActivity extends Activity {
                     reqrssi.setText("Scanning.. ");
                     punti += 1;
                 } else if (punti == 3) {
-                    reqrssi.setText("Scanning... ");
+                    reqrssi.setText("Calculating");
                     punti = 0;
                 }
             }
 
             public void onFinish() {
-                reqrssi.setText("Not scanning ");
+                reqrssi.setText("Click to Scan");
                 research = false;
                 btAdapter.stopLeScan(mScanCallback);
                 mediumValue=mediumValue/count;
@@ -199,8 +224,18 @@ public class MainActivity extends Activity {
                 Log.d("POTENZA",""+terza);
                 Log.d("POTENZA",""+seconda);
                 stima=(c3*terza+c2*seconda+c1*mediumValue+c0)*1000;
+                String stimaString = String.format("%.02f", stima);
                 TextView tvStima = (TextView) findViewById(R.id.tvEstimate);
-                tvStima.setText("" + stima +"m");
+                tvStima.setText("" + stimaString +"m");
+                double logStima= -k*mediumValue+(-k*a);
+                Log.d("LAM","k"+k);
+                Log.d("LAM","a"+a);
+                Log.d("LAM",""+logStima);
+                stimaLam=Math.pow(10.0,logStima);
+                Log.d("LAM","stimaLAM"+stimaLam);
+                //String lamString = String.format("%.02f", stimaLam);
+                TextView tvstima2 =(TextView) findViewById(R.id.tvEstimate2);
+                tvstima2.setText(""+stimaLam+"m");
                 mediumValue=0;
                 count=0;
 
@@ -211,7 +246,7 @@ public class MainActivity extends Activity {
                     mBluetoothAdapter.disable();
                     //ulteriormente se non ervamo in cerca di nuovi codici hash ma stavamo cercando di conetterci al dispositivo preferito
                     // e se quest'ultimo non è stato trovato lo dobbiamo annunciare
-                        Toast.makeText(MainActivity.this, "Not found " + mac, Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Estimation Completed!", Toast.LENGTH_LONG).show();
                 }
             }
         }.start();
@@ -219,8 +254,9 @@ public class MainActivity extends Activity {
 
 
     void AddItem(String name, String rssi) {
-        TextView reqrssi = (TextView) findViewById(R.id.textView8);
-        reqrssi.setText("" + rssi);
+        //Se si vogliono vedere i valori RSSI sui quali stiamo effettuando la media rimuovere le slash da questo.
+        //TextView reqrssi = (TextView) findViewById(R.id.textView8);
+        //reqrssi.setText("" + rssi);
     }
 }
 //considerazioni finali:
