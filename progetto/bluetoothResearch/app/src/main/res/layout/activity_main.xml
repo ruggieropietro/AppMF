@@ -16,13 +16,10 @@
         android:layout_column="1">
 
         <TextView
-            android:hint="1001190065"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ruggiero Pietro"
-            android:id="@+id/textView3"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
+            android:text="______________________"
+            android:id="@+id/textView2"
             android:layout_column="0"
             android:textColor="#94f7f3" />
 
@@ -30,35 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/textView17"
-            android:layout_column="19" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pruzzo Stefano"
-            android:id="@+id/textView4"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_column="28"
-            android:textColor="#94f7f3" />
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+            android:layout_column="21" />
 
     </TableRow>
 
@@ -69,167 +38,21 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ble  distance"
-            android:id="@+id/textView7"
-            android:layout_below="@+id/textView3"
-            android:layout_alignParentStart="true"
+            android:text="Mac Adress"
+            android:id="@+id/textView11"
+            android:layout_below="@+id/editText"
+            android:layout_alignEnd="@+id/editText"
             android:layout_column="0"
             android:textColor="#94f7f3" />
 
-        <TextView
+        <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="35221506509231/2"
-            android:id="@+id/textView5"
-            android:layout_below="@+id/textView4"
-            android:layout_alignParentEnd="true"
-            android:layout_column="28"
-            android:textColor="#94f7f3" />
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="______________________"
-            android:id="@+id/textView6"
-            android:layout_below="@+id/textView5"
-            android:layout_alignParentStart="true"
-            android:layout_column="0"
-            android:textColor="#94f7f3" />
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Polinomial "
-            android:id="@+id/tv1"
-            android:layout_column="0"
+            android:id="@+id/editText2"
+            android:layout_column="2"
+            android:selectAllOnFocus="true"
             android:textColor="#94f7f3"
-            android:textSize="15dp" />
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Estimation"
-            android:id="@+id/textView15"
-            android:layout_column="0"
-            android:textColor="#94f7f3"
-            android:textSize="15dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="0 m "
-            android:id="@+id/tvEstimate"
-            android:layout_column="28"
-            android:textColor="#94f7f3"
-            android:textSize="15dp" />
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView8"
-            android:layout_column="0" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="LAM "
-            android:id="@+id/tv16"
-            android:layout_column="0"
-            android:textColor="#94f7f3"
-            android:textSize="15dp" />
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Estimation"
-            android:id="@+id/textView16"
-            android:layout_column="0"
-            android:textColor="#94f7f3"
-            android:textIsSelectable="false"
-            android:textSize="15dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="0 m"
-            android:id="@+id/tvEstimate2"
-            android:layout_column="28"
-            android:textColor="#94f7f3"
-            android:textSize="15dp" />
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView21"
-            android:layout_column="0" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Click to Scan"
-            android:id="@+id/textView9"
-            android:layout_below="@+id/textView11"
-            android:layout_alignEnd="@+id/textView11"
-            android:layout_column="0"
-            android:textColor="#94f7f3" />
+            android:text="                       " />
     </TableRow>
 
     <TableRow
@@ -239,11 +62,105 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Estimate "
-            android:onClick="OtherMac"
-            android:id="@+id/button5"
+            android:text="Other Mac"
+            android:id="@+id/button"
+            android:onClick="OtherResearch"
             android:layout_column="0"
             android:textColor="#94f7f3" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SAVE MAC"
+            android:id="@+id/button2"
+            android:layout_column="2"
+            android:onClick="savingMac"
+            android:textColor="#94f7f3" />
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
     </TableRow>
 
     <TableRow
@@ -263,21 +180,6 @@
             android:id="@+id/textView10"
             android:layout_column="0"
             android:textColor="#94f7f3" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Mac Adress"
-            android:id="@+id/textView11"
-            android:layout_below="@+id/editText"
-            android:layout_alignEnd="@+id/editText"
-            android:layout_column="0"
-            android:textColor="#94f7f3" />
 
     </TableRow>
 
@@ -288,9 +190,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="                                           "
             android:id="@+id/textView"
-            android:layout_column="0" />
-
+            android:layout_column="2" />
     </TableRow>
 
     <TableRow
@@ -300,52 +202,26 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="RSSI Value"
-            android:id="@+id/textView12"
+            android:text="Pause"
+            android:id="@+id/textView9"
+            android:layout_below="@+id/textView11"
+            android:layout_alignEnd="@+id/textView11"
             android:layout_column="0"
             android:textColor="#94f7f3" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Medium"
-            android:id="@+id/tvmedium"
-            android:layout_column="28"
-            android:textIsSelectable="false"
-            android:textColor="#94f7f3" />
-
     </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/textView19"
-            android:layout_column="0" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Count value"
-            android:id="@+id/textView18"
+            android:text="START"
+            android:onClick="Connecting"
+            android:id="@+id/button5"
             android:layout_column="0"
             android:textColor="#94f7f3" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="count"
-            android:id="@+id/tvcount"
-            android:layout_column="28"
-            android:textColor="#94f7f3" />
     </TableRow>
 
     <TableRow
@@ -355,39 +231,39 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="______________________"
-            android:id="@+id/textView20"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Distance  ="
+            android:id="@+id/textView15"
             android:layout_column="0"
-            android:textSize="15dp"
-            android:textColor="#94f7f3" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+            android:textColor="#94f7f3"
+            android:textSize="15dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/textView2"
-            android:layout_column="0" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="0 m "
+            android:id="@+id/tvEstimate"
+            android:layout_column="1"
+            android:textColor="#94f7f3"
+            android:textSize="15dp" />
     </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView13"
-            android:layout_column="0" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     </TableRow>
 
