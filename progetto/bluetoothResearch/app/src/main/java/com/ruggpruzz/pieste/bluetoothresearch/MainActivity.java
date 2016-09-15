@@ -10,12 +10,16 @@ package com.ruggpruzz.pieste.bluetoothresearch;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,62 +42,92 @@ public class MainActivity extends Activity {
     private int a=-70;
     private double k=0.066;
     private double stima =0;
-    private double stimaLam=0;
+    public boolean other = false;
     //il primo gestore di eventi deve riguardare la scanerizzazione,ovvero quando il dispositivo cerca  altri dispositivi in zona questi prendono il nome di associati
     //ci sono state  problematiche per via delle compatibilità API per  BLE ma si è potuto procedere facendo finta di niente,
     //l'app resta comunque limitata a un range di API
+
     private final BluetoothAdapter.LeScanCallback mScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-                @Override
-                //quando viene trovato un associato
-                public void onLeScan(final BluetoothDevice device, final int rssi, byte[] scanRecord) {
-                    //per poter porre cambiamenti durante un callback si deve mettere  un runner
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.i("", "MAC: " + device.getAddress());
-                            Log.i("", "RSSI: " + rssi);
-                            //filtriamo  il mac interessa
-                            boolean uguale =mac.equals(device.getAddress());
-                            if(uguale)
-                            {
+        new BluetoothAdapter.LeScanCallback() {
+            @Override
+            //quando viene trovato un associato
+            public void onLeScan(final BluetoothDevice device, final int rssi, byte[] scanRecord) {
+                //per poter porre cambiamenti durante un callback si deve mettere  un runner
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //filtriamo  il mac interessa
+                        if (!other) {
+                            if (mac.equals(device.getAddress())) {
                                 capo++;
-                                if (capo==2)
-                                {
-                                    rssiString=rssiString+"\n";
-                                    capo=0;
+                                if (capo == 2) {
+                                    rssiString = rssiString + "\n";
+                                    capo = 0;
                                 }
                                 rssiString = rssiString + rssi;
-                                mediumValue=mediumValue+rssi;
+                                mediumValue = mediumValue + rssi;
                                 count++;
-                                Log.d("MEDIO",""+ mediumValue);
-                                Log.d("UGUALE","entrati nell'if");
-                                //qui la chiamata a metodo,per processi di sviluppo.
-                                AddItem(device.getAddress(), rssiString);
                             }
                             new CountDownTimer(12000, 1000) {
                                 public void onTick(long millisUntilFinished) {
                                 }
+
                                 public void onFinish() {
                                     //in ogni caso di analize "resetta" gli stati del bluetooth adapter,quello utile per lo scan
                                     mBluetoothAdapter.cancelDiscovery();
                                     mBluetoothAdapter.disable();
                                 }
                             }.start();
-                            Log.d("control", "Countdown Partito");
                         }
-                    });
+                        else
+                        {
+                            Toast.makeText(MainActivity.this, device.getName() + " " + device.getAddress(), Toast.LENGTH_LONG).show();
+                        }
+
+                    }
+                });
+            }
+        };
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            //quando viene trovato un associato
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (!other) {
+                    if (mac.equals(device.getAddress())) {
+                        capo++;
+                        if (capo == 2) {
+                            rssiString = rssiString + "\n";
+                            capo = 0;
+                        }
+
+                        rssiString = rssiString + device.EXTRA_RSSI;
+                        mediumValue = mediumValue + Integer.parseInt(device.EXTRA_RSSI);
+                        count++;
+                    }
                 }
-            };
+                else
+                {
+                    Toast.makeText(MainActivity.this, device.getName() + " " + device.getAddress(), Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    };
     //l'oncreate,questa per noi si occupa di avviare altri stati e processi di eventi.
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //abbiamo pensato fosse utile ,visti i problemi di compatibilità ,efettuare da subito un controllo API
-        if ((Build.VERSION.SDK_INT < 21) && (Build.VERSION.SDK_INT > 17)) {
+        if ( (Build.VERSION.SDK_INT > 17)) {
             setContentView(R.layout.activity_main);
+            SharedPreferences settings = getSharedPreferences("mac",Integer.parseInt(mac));
+            mac = settings.getString("mac", "E1:D4:23:D7:61:7D");
             //qui viene creato l'adapter,che sarebbe il nostro dispositivo,
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             btAdapter = BluetoothAdapter.getDefaultAdapter();
+            IntentFilter filter2 = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            registerReceiver(mReceiver, filter2);
             //tutti i dispositivi dovrebbero avere il bluetooth,ma nel caso partciolare in cui sia difettoso ,staccato ecc...
             //ne siamo subito a conoscenza
             if (mBluetoothAdapter == null) {
@@ -104,7 +138,7 @@ public class MainActivity extends Activity {
         }
         //come detto prima siamo subito a conoscenza anche per le problematiche di compatibilità,pultroppo possibili nel nostro caso specifico
         else {
-            Toast.makeText(MainActivity.this, "API correctly are :(17<API<21)", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "API correctly are :(17<API)", Toast.LENGTH_LONG).show();
         }
     }
     //dentro l'on resume abbiamo bisogno di spegnere ilbluetooth,questo perchè un'attivazione esterna del bkluetooth puo' compromettere la comprensione
@@ -122,7 +156,18 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(mReceiver);
         mBluetoothAdapter.disable();
+    }
+    public void Connecting (View v)
+    {
+        other =false;
+        OtherMac(v);
+    }
+    public void OtherResearch (View v)
+    {
+        other =true;
+        OtherMac(v);
     }
     //metodo chiamato quando si schiaccia il bottone,fa quindi partire la scanerizzazione dei dispositivi associati
     public void OtherMac(View v) {
@@ -148,7 +193,8 @@ public class MainActivity extends Activity {
         TextView reqrssi = (TextView) findViewById(R.id.textView9);
         reqrssi.setText("Scanning ");
         //qui il problema di compatibiltà
-        btAdapter.startLeScan(mScanCallback);
+            btAdapter.startLeScan(mScanCallback);
+        btAdapter.startDiscovery();
         //questo countdown è il cervello del calcolo,si occupa di comunicare all'utente che sta scanerizzando,o calcolando,
         //essendo avviato subito dopo startlescan ci si ritrova ad avere l'aggionameto degli rssi ottenuti attraverso scancallback,
         //Cosi che alla fine del countdown vengano aggiornati i text informativi e venga stimata la distanza attraverso i 2 algoritmi
@@ -172,35 +218,17 @@ public class MainActivity extends Activity {
                 }
             }
             public void onFinish() {
-                reqrssi.setText("Click for Scan");
+                reqrssi.setText("Pause");
                 research = false;
-                btAdapter.stopLeScan(mScanCallback);
-                mediumValue=mediumValue/count;
-                TextView tvCount = (TextView) findViewById(R.id.tvcount);
-                tvCount.setText("" + count);
-                TextView tvMedium = (TextView) findViewById(R.id.tvmedium);
-                tvMedium.setText("" + mediumValue);
+                    btAdapter.stopLeScan(mScanCallback);
+                mBluetoothAdapter.cancelDiscovery();
+                mBluetoothAdapter.disable();
                 double terza = Math.pow(mediumValue,3.0);
                 double seconda = Math.pow(mediumValue,2.0);
-                Log.d("STIMA",""+c3);
-                Log.d("STIMA",""+c2);
-                Log.d("STIMA",""+c1);
-                Log.d("STIMA",""+c0);
-                Log.d("POTENZA",""+terza);
-                Log.d("POTENZA",""+seconda);
                 stima=(c3*terza+c2*seconda+c1*mediumValue+c0)*1000;
                 String stimaString = String.format("%.02f", stima);
                 TextView tvStima = (TextView) findViewById(R.id.tvEstimate);
                 tvStima.setText("" + stimaString +"m");
-                double logStima= -k*mediumValue+(-k*a);
-                Log.d("LAM","k"+k);
-                Log.d("LAM","a"+a);
-                Log.d("LAM",""+logStima);
-                stimaLam=Math.pow(10.0,logStima);
-                Log.d("LAM","stimaLAM"+stimaLam);
-                //String lamString = String.format("%.02f", stimaLam);
-                TextView tvstima2 =(TextView) findViewById(R.id.tvEstimate2);
-                tvstima2.setText(""+stimaLam+"m");
                 mediumValue=0;
                 count=0;
                 //a fine ricerca  si disabilità il bluetooth interno,questo perchè
@@ -208,15 +236,28 @@ public class MainActivity extends Activity {
                     mBluetoothAdapter.disable();
                     //ulteriormente se non ervamo in cerca di nuovi codici hash ma stavamo cercando di conetterci al dispositivo preferito
                     // e se quest'ultimo non è stato trovato lo dobbiamo annunciare
-                        Toast.makeText(MainActivity.this, "Estimation Completed!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "End calculating!", Toast.LENGTH_LONG).show();
             }
         }.start();
     }
-//metodo utile in fase di sviluppo,per raccogliere una lista rssi direttamente dall'aplicazione
-    void AddItem(String name, String rssi) {
-        //Se si vogliono vedere i valori RSSI sui quali stiamo effettuando la media rimuovere le slash da questo.
-        //TextView reqrssi = (TextView) findViewById(R.id.textView8);
-        //reqrssi.setText("" + rssi);
+    public void savingMac(View v)
+    {
+        try
+        {
+            TextView macSave = (EditText) findViewById(R.id.editText2);
+            mac =(macSave.getText().toString());
+            SharedPreferences settings = getSharedPreferences("mac", Integer.parseInt(mac));
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putInt("mac",  Integer.parseInt(mac));
+            editor.commit();
+            TextView req = (TextView) findViewById(R.id.textView11);
+            req.setText("" + mac);
+            mBluetoothAdapter.disable();
+        }
+        catch (NumberFormatException e)
+        {
+            Toast.makeText(MainActivity.this, "invalid insert", Toast.LENGTH_LONG).show();
+        }
     }
 }
 //considerazioni finali:
